@@ -1,17 +1,14 @@
 #include "api.h"
 
 void api::init() {
-    this->on(Opcode::HEELO_WORLD, &api::helloWorld);
-    this->on(Opcode::MESSAGE, &api::sendMsg);
+    this->on(Opcode::WELCOME, &api::onWelcome);
+    this->on(Opcode::KEY_PRESS, &api::onKeyPress);
+    this->on(Opcode::KEY_RELEASE, &api::onKeyRelease);
 }
 
-/*
- * {
- *   msg: ""
- * }
- *
- * */
-void api::sendMsg() {
-    CROW_LOG_INFO << this->data["msg"];
-    this->emit(Opcode::MESSAGE, this->data);
-}
+
+// player sends pickname
+// {name: ""}
+
+
+

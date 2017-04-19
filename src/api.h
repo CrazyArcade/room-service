@@ -25,30 +25,30 @@ public:
 
     ~api() = default;
 
-    using callback = void (api::*)();
+    using callback = void (api::*)(json, wsuser);
     using json = nlohmann::json;
+    using wsuser = crow::websocket::connection *;
 
     enum class Opcode : std::uint8_t {
-        HEELO_WORLD = 0,
-        MESSAGE
+        WELCOME = 0,
+        KEY_PRESS,
+        KEY_RELEASE
     };
 
     void on(Opcode code, callback fn) {
         funcList.insert({code, fn});
     };
 
-    void handle(std::string body) {
+    void handle(std::string body, wsuser user) {
         json j = json::parse(body);
-
         Opcode code = static_cast<Opcode>(j["o"].get<int>());
-        this->data = j["d"];
 
         if (funcList.find(code) == funcList.cend()) {
             CROW_LOG_WARNING << "Opcode "
                              << static_cast<int>(transform_enum(code))
                              << " is not found";
         } else {
-            (this->*funcList[code])();
+            (this->*funcList[code])(j["d"], user);
         }
     };
 
@@ -62,11 +62,13 @@ public:
         }
     }
 
-    void addUser(crow::websocket::connection *user) {
+    void addUser(wsuser user) {
+        user->userdata(new Player);
         userList.insert(user);
     };
 
-    void delUser(crow::websocket::connection *user) {
+    void delUser(wsuser user) {
+        delete static_cast<Player *>(user->userdata());
         userList.erase(user);
     };
 
@@ -81,21 +83,15 @@ private:
     };
 
     std::unordered_map<api::Opcode, api::callback, EnumClassHash> funcList;
-    std::unordered_set<crow::websocket::connection *> userList;
-
-    json data;
+    std::unordered_set<wsuser> userList;
 
 private:
     // api
-    void helloWorld() {
-        CROW_LOG_INFO << "hello world!It works!";
-    }
+    void onWelcome(json, wsuser = nullptr);
 
-    void sendMsg();
+    void onKeyPress(json, wsuser = nullptr);
 
-    void keyPress();
-
-    void keyRelease();
+    void onKeyRelease(json, wsuser = nullptr);
 
 };
 
