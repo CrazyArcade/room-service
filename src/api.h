@@ -25,14 +25,19 @@ public:
 
     ~api() = default;
 
-    using callback = void (api::*)(json, wsuser);
-    using json = nlohmann::json;
     using wsuser = crow::websocket::connection *;
+    using json = nlohmann::json;
+    using callback = void (api::*)(json, wsuser);
+
 
     enum class Opcode : std::uint8_t {
-        WELCOME = 0,
+        // reveice
+                WELCOME = 0,
         KEY_PRESS,
-        KEY_RELEASE
+        KEY_RELEASE,
+
+        // send
+                GOTIT = 20
     };
 
     void on(Opcode code, callback fn) {
@@ -77,7 +82,7 @@ private:
 
     struct EnumClassHash {
         template<typename T>
-        std::size_t operator()(T t) const {
+        std::int8_t operator()(T t) const {
             return static_cast<std::int8_t>(t);
         }
     };
