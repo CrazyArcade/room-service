@@ -15,6 +15,16 @@ public:
         LEFT = 0, RIGHT = 1, UP = 2, DOWN = 3, NONE = -1
     };
 
+    enum Status {
+        FREE,
+        MOVE_LEFT,
+        MOVE_RIGHT,
+        MOVE_UP,
+        MOVE_DOWN,
+        FREEZE,
+        DIE
+    };
+
     void setName(std::string name) { this->_name = name; }
 
     std::string getName() const { return this->_name; }

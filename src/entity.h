@@ -3,18 +3,32 @@
 
 #include "utils.h"
 
+struct Position {
+    float x;
+    float y;
+};
+
 class Entity {
 public:
     Entity();
 
     ~Entity();
 
-    objectID getObjectID() const {
-        return this->_id;
-    }
+    objectID getObjectID() const;
+
+    void setPositionX(int x);
+
+    void setPositionY(int y);
+
+    void setPosition(Position p);
+
+    void setPostiion(int x, int y);
+
+    Position getPosition() const;
 
 private:
     objectID _id;
+    Position pos;
 };
 
 
