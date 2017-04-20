@@ -23,7 +23,8 @@ int main() {
                 std::lock_guard<std::mutex> _(mtx);
                 io->handle(data, &conn);
             });
-    app.port(4000).multithreaded()
+    app.port(4000)
+            .multithreaded()
             .run();
 
     return 0;

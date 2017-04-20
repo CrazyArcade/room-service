@@ -8,7 +8,7 @@
 #include <unordered_map>
 #include <unordered_set>
 #include "utils.h"
-#include "player.h"
+#include "src/model/player.h"
 
 /*
  * json fomart

@@ -1,7 +1,7 @@
 #ifndef SERVER_ENTITY_H
 #define SERVER_ENTITY_H
 
-#include "utils.h"
+#include "src/utils.h"
 
 struct Position {
     float x;
