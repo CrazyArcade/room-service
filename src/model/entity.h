@@ -26,6 +26,10 @@ public:
 
     Position getPosition() const;
 
+    float getPositionX() const;
+
+    float getPositionY() const;
+
 private:
     objectID _id;
     Position pos;

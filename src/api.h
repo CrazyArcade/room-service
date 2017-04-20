@@ -31,13 +31,12 @@ public:
 
 
     enum class Opcode : std::uint8_t {
-        // reveice
-                WELCOME = 0,
+        WELCOME = 0,
         KEY_PRESS,
         KEY_RELEASE,
 
-        // send
-                GOTIT = 20
+        GOTIT = 20,
+        PLAYER_POS_UPDATE
     };
 
     void on(Opcode code, callback fn) {
@@ -76,7 +75,7 @@ public:
         delete static_cast<Player *>(user->userdata());
         userList.erase(user);
     };
-
+    std::unordered_set<wsuser> userList;
 private:
     void init();
 
@@ -88,7 +87,7 @@ private:
     };
 
     std::unordered_map<api::Opcode, api::callback, EnumClassHash> funcList;
-    std::unordered_set<wsuser> userList;
+
 
 private:
     // api

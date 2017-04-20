@@ -12,7 +12,7 @@ public:
     ~Player() = default;
 
     enum ArrowKey {
-        LEFT = 0, RIGHT = 1, UP = 2, DOWN = 3, NONE = -1
+        LEFT = 0, RIGHT = 1, UP = 2, DOWN = 3
     };
 
     enum Status {
@@ -29,15 +29,18 @@ public:
 
     std::string getName() const { return this->_name; }
 
-    ArrowKey getDirection();
+    Status getStatus() const;
 
-    void setDirection(ArrowKey k);
+    void setStatus(Status status);
 
-    void removeDirection(ArrowKey k);
+    void setKey(ArrowKey k);
+
+    void removeKey(ArrowKey k);
 
 private:
     std::string _name;
     std::time_t _keyRecord[4] = {0};
+    Status status;
 };
 
 #endif //SERVER_PLAYER_H

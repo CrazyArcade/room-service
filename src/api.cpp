@@ -37,13 +37,15 @@ void api::onWelcome(api::json data, api::wsuser user) {
 }
 
 // {key:<num>}
-void api::onKeyPress(api::json, api::wsuser user) {
+void api::onKeyPress(api::json data, api::wsuser user) {
     auto player = getUserDate(user);
-    // TODO
+    auto key = data["key"].get<int>();
+    player->setKey(static_cast<Player::ArrowKey>(key));
 }
 
-void api::onKeyRelease(api::json, api::wsuser user) {
+void api::onKeyRelease(api::json data, api::wsuser user) {
     auto player = getUserDate(user);
-    // TODO
+    auto key = data["key"].get<int>();
+    player->setKey(static_cast<Player::ArrowKey>(key));
 }
 

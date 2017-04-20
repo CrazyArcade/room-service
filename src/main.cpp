@@ -5,9 +5,7 @@
 void loop(api *io) {
     CROW_LOG_INFO << "gameLoop Start";
     while (1) {
-        api::json j;
-        j["a"] = 1;
-        io->emit(api::Opcode::GOTIT, j);
+        // game logic
         std::this_thread::sleep_for(std::chrono::milliseconds(200));
     }
 }
@@ -39,8 +37,8 @@ int main() {
             });
 
     std::thread t1(run, std::ref(app));
-    std::thread t2(loop, io);
+//    std::thread t2(loop, io);
     t1.join();
-    t2.join();
+//    t2.join();
     return 0;
 }
