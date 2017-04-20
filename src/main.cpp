@@ -2,6 +2,20 @@
 #include "crow_all.h"
 #include "api.h"
 
+void loop(api *io) {
+    CROW_LOG_INFO << "gameLoop Start";
+    while (1) {
+        api::json j;
+        j["a"] = 1;
+        io->emit(api::Opcode::GOTIT, j);
+        std::this_thread::sleep_for(std::chrono::milliseconds(200));
+    }
+}
+
+void run(crow::SimpleApp &app) {
+    app.port(4000).multithreaded().run();
+}
+
 int main() {
     auto io = new api;
     crow::SimpleApp app;
@@ -23,9 +37,10 @@ int main() {
                 std::lock_guard<std::mutex> _(mtx);
                 io->handle(data, &conn);
             });
-    app.port(4000)
-            .multithreaded()
-            .run();
 
+    std::thread t1(run, std::ref(app));
+    std::thread t2(loop, io);
+    t1.join();
+    t2.join();
     return 0;
 }

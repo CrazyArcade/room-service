@@ -11,8 +11,7 @@ void api::init() {
 }
 
 // player sends pickname
-// {name: ""}
-
+// {name: <string>}
 void api::onWelcome(api::json data, api::wsuser user) {
     json res;
     if (data.find("name") == data.end()) {
@@ -37,8 +36,9 @@ void api::onWelcome(api::json data, api::wsuser user) {
     }
 }
 
+// {key:<num>}
 void api::onKeyPress(api::json, api::wsuser user) {
-    auto player = static_cast<Player *>(user->userdata());
+    auto player = getUserDate(user);
     // TODO
 }
 
