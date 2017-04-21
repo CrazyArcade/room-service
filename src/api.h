@@ -29,14 +29,13 @@ public:
     using json = nlohmann::json;
     using callback = void (api::*)(json, wsuser);
 
-
     enum class Opcode : std::uint8_t {
         WELCOME = 0,
         KEY_PRESS,
         KEY_RELEASE,
 
         GOTIT = 20,
-        PLAYER_POS_UPDATE
+        PLAYER_POS_UPDATE,
     };
 
     void on(Opcode code, callback fn) {
@@ -44,16 +43,24 @@ public:
     };
 
     void handle(std::string body, wsuser user) {
-        json j = json::parse(body);
-        Opcode code = static_cast<Opcode>(j["o"].get<int>());
+        try {
+            json j = json::parse(body);
+            json data(json::value_t::object);
 
-        if (funcList.find(code) == funcList.cend()) {
-            CROW_LOG_WARNING << "Opcode "
-                             << static_cast<int>(transform_enum(code))
-                             << " is not found";
-        } else {
-            (this->*funcList[code])(j["d"], user);
-        }
+            if (!j["d"].empty()) {
+                data = j["d"];
+            }
+
+            Opcode code = static_cast<Opcode>(j["o"].get<int>());
+
+            if (funcList.find(code) == funcList.cend()) {
+                CROW_LOG_WARNING << "Opcode " << static_cast<int>(transform_enum(code)) << " is not found";
+            } else {
+                (this->*funcList[code])(data, user);
+            }
+        } catch (std::invalid_argument e) {
+            CROW_LOG_ERROR << e.what();
+        } catch (...) {}
     };
 
     void emit(Opcode code, json body) {
@@ -91,11 +98,11 @@ private:
 
 private:
     // api
-    void onWelcome(json, wsuser = nullptr);
+    void onWelcome(json data, wsuser = nullptr);
 
-    void onKeyPress(json, wsuser = nullptr);
+    void onKeyPress(json data, wsuser = nullptr);
 
-    void onKeyRelease(json, wsuser = nullptr);
+    void onKeyRelease(json data, wsuser = nullptr);
 
 };
 
