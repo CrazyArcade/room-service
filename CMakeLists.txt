@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.7)
 project(server)
 
 set(CMAKE_CXX_STANDARD 14)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")
 
 find_package(Threads)
 find_package(Boost REQUIRED COMPONENTS program_options system)
@@ -12,8 +12,10 @@ set(PROJECT_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include)
 include_directories("${PROJECT_INCLUDE_DIR}")
 include_directories("${PROJECT_SOURCE_DIR}")
 
-set(SOURCE_FILES src/main.cpp src/model/entity.cpp src/model/entity.h src/model/player.cpp src/model/player.h src/utils.h src/utils.cpp src/api.cpp src/api.h)
+set(SOURCE_FILES src/main.cpp src/model/entity.cpp src/model/entity.h src/model/player.cpp src/model/player.h src/utils.h src/utils.cpp src/api.cpp src/api.h src/controller/game.cpp src/controller/game.h src/controller/room.cpp src/controller/room.h)
 add_executable(server ${SOURCE_FILES})
+
+FIND_PACKAGE_HANDLE_STANDARD_ARGS(LIBUV DEFAULT_MSG LIBUV_LIBRARIES LIBUV_INCLUDE_DIR)
 
 target_link_libraries(server ${Boost_LIBRARIES})
 target_link_libraries(server pthread)
