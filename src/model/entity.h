@@ -2,6 +2,7 @@
 #define SERVER_ENTITY_H
 
 #include "src/utils.h"
+#include <memory>
 
 struct Position {
     float x;

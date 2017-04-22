@@ -8,7 +8,7 @@
 #include <unordered_map>
 #include <unordered_set>
 #include "utils.h"
-#include "src/model/player.h"
+#include "src/controller/room.h"
 
 /*
  * json fomart
@@ -63,7 +63,15 @@ public:
         } catch (...) {}
     };
 
-    void emit(Opcode code, json body) {
+    void emit(Opcode code, json body, wsuser user) {
+        json data = {
+                {"o", static_cast<int>(transform_enum(code))},
+                {"d", body}
+        };
+        user->send_text(data.dump());
+    };
+
+    void emitAll(Opcode code, json body) {
         json data = {
                 {"o", static_cast<int>(transform_enum(code))},
                 {"d", body}
@@ -71,15 +79,18 @@ public:
         for (auto u : userList) {
             u->send_text(data.dump());
         }
-    }
+    };
 
     void addUser(wsuser user) {
-        user->userdata(new Player);
+        auto player = Room::getInstance()->createPlayer();
+        auto id = player->getObjectID();
+        user->userdata(id);
         userList.insert(user);
     };
 
     void delUser(wsuser user) {
-        delete static_cast<Player *>(user->userdata());
+//        Room::getInstance()->deletePlayer()
+        user->userdata(nullptr);
         userList.erase(user);
     };
     std::unordered_set<wsuser> userList;

@@ -6426,11 +6426,14 @@ namespace crow
             virtual void close(const std::string& msg = "quit") = 0;
             virtual ~connection(){}
 
-            void userdata(void* u) { userdata_ = u; }
-            void* userdata() { return userdata_; }
+            // This is a dirty way to fix cast between `void *` and `std::shared_ptr<Player>`,
+            // may be done better but limited by my weak knowledge
+            void userdata(std::string u) { userdata_ = u; }
+
+            std::string userdata() { return userdata_; }
 
         private:
-            void* userdata_;
+            std::string userdata_;
 		};
 
 		template <typename Adaptor>
