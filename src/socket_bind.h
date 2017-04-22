@@ -110,9 +110,7 @@ private:
 private:
     // SocketBind
     void onWelcome(json data, wsuser = nullptr);
-
     void onKeyPress(json data, wsuser = nullptr);
-
     void onKeyRelease(json data, wsuser = nullptr);
 
 };

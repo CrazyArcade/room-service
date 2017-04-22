@@ -12,13 +12,9 @@ public:
     }
 
     Room(Room const &) = delete;
-
     void operator=(Room const &) = delete;
-
     std::shared_ptr<Player> createPlayer();
-
     std::shared_ptr<Player> getPlayerByObjectID(objectID id);
-
     void deletePlayer(std::shared_ptr<Player> player);
 
 private:

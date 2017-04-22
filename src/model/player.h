@@ -34,11 +34,8 @@ public:
     std::string getName() const { return this->_name; }
 
     Status getStatus() const;
-
     void setStatus(Status status);
-
     void setKey(ArrowKey k);
-
     void removeKey(ArrowKey k);
 
 private:

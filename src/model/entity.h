@@ -12,23 +12,14 @@ struct Position {
 class Entity {
 public:
     Entity();
-
     ~Entity();
-
     objectID getObjectID() const;
-
     void setPositionX(int x);
-
     void setPositionY(int y);
-
     void setPosition(Position p);
-
     void setPostiion(int x, int y);
-
     Position getPosition() const;
-
     float getPositionX() const;
-
     float getPositionY() const;
 
 private:
