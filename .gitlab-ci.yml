@@ -9,7 +9,7 @@ build:
   # instead of calling g++ directly you can also use some build toolkit like make
   # install the necessary build tools when needed
   before_script: 
-     - apt update && apt -y install cmake uuid-dev libboost-all-dev 
+     - apt update && apt -y install g++ cmake uuid-dev libboost-dev
   script: 
     - mkdir build && cd build
     - cmake ..
