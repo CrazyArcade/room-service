@@ -1,18 +1,18 @@
-#include "api.h"
+#include "socket_bind.h"
 
-inline Player *getUserDate(api::wsuser user) {
+inline Player *getUserDate(SocketBind::wsuser user) {
     return static_cast<Player *>(user->userdata());
 }
 
-void api::init() {
-    this->on(Opcode::WELCOME, &api::onWelcome);
-    this->on(Opcode::KEY_PRESS, &api::onKeyPress);
-    this->on(Opcode::KEY_RELEASE, &api::onKeyRelease);
+void SocketBind::init() {
+    this->on(Opcode::WELCOME, &SocketBind::onWelcome);
+    this->on(Opcode::KEY_PRESS, &SocketBind::onKeyPress);
+    this->on(Opcode::KEY_RELEASE, &SocketBind::onKeyRelease);
 }
 
 // player sends pickname
 // {name: <string>}
-void api::onWelcome(api::json data, api::wsuser user) {
+void SocketBind::onWelcome(SocketBind::json data, SocketBind::wsuser user) {
     json res;
     if (data.find("name") == data.end()) {
         res["msg"] = "param 'name' not found";
@@ -37,13 +37,13 @@ void api::onWelcome(api::json data, api::wsuser user) {
 }
 
 // {key:<num>}
-void api::onKeyPress(api::json data, api::wsuser user) {
+void SocketBind::onKeyPress(SocketBind::json data, SocketBind::wsuser user) {
     auto player = getUserDate(user);
     auto key = data["key"].get<int>();
     player->setKey(static_cast<Player::ArrowKey>(key));
 }
 
-void api::onKeyRelease(api::json data, api::wsuser user) {
+void SocketBind::onKeyRelease(SocketBind::json data, SocketBind::wsuser user) {
     auto player = getUserDate(user);
     auto key = data["key"].get<int>();
     player->setKey(static_cast<Player::ArrowKey>(key));

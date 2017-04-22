@@ -1,9 +1,9 @@
 #include <iostream>
 #include "crow_all.h"
-#include "api.h"
+#include "socket_bind.h"
 
 int main() {
-    auto io = new api;
+    auto io = new SocketBind;
     crow::SimpleApp app;
 
     std::mutex mtx;
@@ -36,9 +36,9 @@ int main() {
         }
     });
     std::thread t2([&app] {
-        app.port(4000).multithreaded().run();
+        app.port(4000).run();
     });
-    t1.join();
     t2.join();
+    t1.join();
     return 0;
 }

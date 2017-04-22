@@ -19,15 +19,15 @@
  *
  * */
 
-class api {
+class SocketBind {
 public:
-    api() { this->init(); };
+    SocketBind() { this->init(); };
 
-    ~api() = default;
+    ~SocketBind() = default;
 
     using wsuser = crow::websocket::connection *;
     using json = nlohmann::json;
-    using callback = void (api::*)(json, wsuser);
+    using callback = void (SocketBind::*)(json, wsuser);
 
     enum class Opcode : std::uint8_t {
         WELCOME = 0,
@@ -93,11 +93,11 @@ private:
         }
     };
 
-    std::unordered_map<api::Opcode, api::callback, EnumClassHash> funcList;
+    std::unordered_map<SocketBind::Opcode, SocketBind::callback, EnumClassHash> funcList;
 
 
 private:
-    // api
+    // SocketBind
     void onWelcome(json data, wsuser = nullptr);
 
     void onKeyPress(json data, wsuser = nullptr);
