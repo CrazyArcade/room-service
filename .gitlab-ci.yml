@@ -8,8 +8,14 @@ build:
   stage: build
   # instead of calling g++ directly you can also use some build toolkit like make
   # install the necessary build tools when needed
-  before_script: 
-     - apt update && apt -y install g++ cmake uuid-dev libboost-all-dev
+  cache:
+    key: apt-cache
+    paths:
+    - apt-cache/
+
+  before_script:
+     - export APT_CACHE_DIR=`pwd`/apt-cache && mkdir -pv $APT_CACHE_DIR
+     - apt update -yq && apt -y -o dir::cache::archives="$APT_CACHE_DIR" install g++ cmake uuid-dev libboost-all-dev
   script: 
     - mkdir build && cd build
     - cmake ..
