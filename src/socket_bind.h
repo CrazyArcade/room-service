@@ -1,7 +1,7 @@
 #ifndef SERVER_API_H
 #define SERVER_API_H
 
-#include "crow_all.h"
+#include <uWS/uWS.h>
 #include "json.hpp"
 #include <string>
 #include <cstdint>
@@ -25,7 +25,7 @@ public:
 
     ~SocketBind() = default;
 
-    using wsuser = crow::websocket::connection *;
+    using wsuser = uWS::WebSocket<uWS::CLIENT> *;
     using json = nlohmann::json;
     using callback = void (SocketBind::*)(json, wsuser);
 
@@ -54,12 +54,12 @@ public:
             Opcode code = static_cast<Opcode>(j["o"].get<int>());
 
             if (funcList.find(code) == funcList.cend()) {
-                CROW_LOG_WARNING << "Opcode " << static_cast<int>(transform_enum(code)) << " is not found";
+//                CROW_LOG_WARNING << "Opcode " << static_cast<int>(transform_enum(code)) << " is not found";
             } else {
                 (this->*funcList[code])(data, user);
             }
         } catch (std::invalid_argument e) {
-            CROW_LOG_ERROR << e.what();
+//            CROW_LOG_ERROR << e.what();
         } catch (...) {}
     };
 
@@ -68,7 +68,7 @@ public:
                 {"o", static_cast<int>(transform_enum(code))},
                 {"d", body}
         };
-        user->send_text(data.dump());
+        user->send(data.dump().c_str(), uWS::OpCode::TEXT);
     };
 
     void emitAll(Opcode code, json body) {
@@ -76,21 +76,21 @@ public:
                 {"o", static_cast<int>(transform_enum(code))},
                 {"d", body}
         };
-        for (auto u : userList) {
-            u->send_text(data.dump());
+        for (auto user : userList) {
+            user->send(data.dump().c_str(), uWS::OpCode::TEXT);
         }
     };
 
     void addUser(wsuser user) {
         auto player = Room::getInstance()->createPlayer();
         auto id = player->getObjectID();
-        user->userdata(id);
+        user->setUserData(&id);
         userList.insert(user);
     };
 
     void delUser(wsuser user) {
 //        Room::getInstance()->deletePlayer()
-        user->userdata(nullptr);
+        user->setUserData(nullptr);
         userList.erase(user);
     };
     std::unordered_set<wsuser> userList;
