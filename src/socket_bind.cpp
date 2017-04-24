@@ -1,6 +1,8 @@
 #include "socket_bind.h"
 
 std::shared_ptr<Player> getPlayerByUser(SocketBind::wsuser user) {
+//    return *static_cast<std::shared_ptr<Player> *>(user->getUserData());
+    std::cout << *static_cast<std::string *>(user->getUserData()) << std::endl;
     return Room::getInstance()->getPlayerByObjectID(
             *static_cast<std::string *>(user->getUserData())
     );

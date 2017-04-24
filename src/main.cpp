@@ -6,23 +6,28 @@ int main() {
     auto io = new SocketBind;
 
     uWS::Hub h;
-    h.onConnection([&io](uWS::WebSocket<uWS::CLIENT> *ws, uWS::HttpRequest req) {
+    h.onConnection([&](uWS::WebSocket<uWS::SERVER> *ws, uWS::HttpRequest req) {
         std::cout << "new websocket connection" << std::endl;
-        std::cout.flush();
         io->addUser(ws);
     });
 
-    h.onDisconnection([&io](uWS::WebSocket<uWS::CLIENT> *ws, int code, char *message, size_t length) {
-        std::cout << "websocket connection closed: " << code << ' ' << message << std::endl;
+    h.onMessage([&io](uWS::WebSocket<uWS::SERVER> *ws, char *message, size_t length, uWS::OpCode opCode) {
+        std::string body(message, length);
+        io->handle(body, ws);
+    });
+
+    h.onDisconnection([&io](uWS::WebSocket<uWS::SERVER> *ws, int code, char *message, size_t length) {
+        std::cout << "websocket connection closed: " << code << std::endl;
         io->delUser(ws);
     });
 
-    h.onMessage([&io](uWS::WebSocket<uWS::CLIENT> *ws, char *message, size_t length, uWS::OpCode opCode) {
-        io->handle(message, ws);
-//        ws->send(message, length, opCode);
-    });
+//    h.onError();
 
-    h.listen(4000);
+    if (h.listen(4000)) {
+        std::cout << "start" << std::endl;
+    } else {
+        std::cerr << "Can't listen at port 4000" << std::endl;
+    }
     h.run();
 
 //    crow::SimpleApp app;

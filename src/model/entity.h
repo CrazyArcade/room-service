@@ -22,7 +22,7 @@ public:
     float getPositionX() const;
     float getPositionY() const;
 
-private:
+protected:
     objectID _id;
     Position pos;
 };

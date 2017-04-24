@@ -33,6 +33,7 @@ public:
 
     std::string getName() const { return this->_name; }
 
+    std::string *getObjectIDPtr();
     Status getStatus() const;
     void setStatus(Status status);
     void setKey(ArrowKey k);

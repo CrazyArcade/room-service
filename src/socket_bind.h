@@ -25,7 +25,7 @@ public:
 
     ~SocketBind() = default;
 
-    using wsuser = uWS::WebSocket<uWS::CLIENT> *;
+    using wsuser = uWS::WebSocket<uWS::SERVER> *;
     using json = nlohmann::json;
     using callback = void (SocketBind::*)(json, wsuser);
 
@@ -83,13 +83,12 @@ public:
 
     void addUser(wsuser user) {
         auto player = Room::getInstance()->createPlayer();
-        auto id = player->getObjectID();
-        user->setUserData(&id);
+        auto id = player->getObjectIDPtr();
+        user->setUserData(static_cast<void *>(id));
         userList.insert(user);
     };
 
     void delUser(wsuser user) {
-//        Room::getInstance()->deletePlayer()
         user->setUserData(nullptr);
         userList.erase(user);
     };
@@ -106,7 +105,6 @@ private:
 
     std::unordered_map<SocketBind::Opcode, SocketBind::callback, EnumClassHash> funcList;
 
-
 private:
     // SocketBind
     void onWelcome(json data, wsuser = nullptr);
@@ -114,6 +112,5 @@ private:
     void onKeyRelease(json data, wsuser = nullptr);
 
 };
-
 
 #endif //SERVER_API_H
