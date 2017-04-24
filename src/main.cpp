@@ -3,9 +3,9 @@
 #include "socket_bind.h"
 
 int main() {
-    auto io = new SocketBind;
-
     uWS::Hub h;
+    auto io = new SocketBind(h);
+
     h.onConnection([&](uWS::WebSocket<uWS::SERVER> *ws, uWS::HttpRequest req) {
         std::cout << "new websocket connection" << std::endl;
         io->addUser(ws);

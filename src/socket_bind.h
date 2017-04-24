@@ -21,7 +21,7 @@
 
 class SocketBind {
 public:
-    SocketBind() { this->init(); };
+    SocketBind(uWS::Hub &h) : h(h) { this->init(); };
 
     ~SocketBind() = default;
 
@@ -71,14 +71,12 @@ public:
         user->send(data.dump().c_str(), uWS::OpCode::TEXT);
     };
 
-    void emitAll(Opcode code, json body) {
+    void emit(Opcode code, json body) {
         json data = {
                 {"o", static_cast<int>(transform_enum(code))},
                 {"d", body}
         };
-        for (auto user : userList) {
-            user->send(data.dump().c_str(), uWS::OpCode::TEXT);
-        }
+        h.getDefaultGroup<uWS::SERVER>().broadcast(data, data.size(), uWS::OpCode::TEXT);
     };
 
     void addUser(wsuser user) {
@@ -94,6 +92,7 @@ public:
     };
     std::unordered_set<wsuser> userList;
 private:
+    uWS::Hub h;
     void init();
 
     struct EnumClassHash {
