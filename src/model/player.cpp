@@ -20,8 +20,12 @@ void Player::removeKey(Player::ArrowKey k) {
     this->_keyRecord[k] = 0;
 }
 
-std::string *Player::getObjectIDPtr() {
+objectID *Player::getObjectIDPtr() {
     return &(this->_id);
+}
+
+void Player::update() {
+
 }
 
 

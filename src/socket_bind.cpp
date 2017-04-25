@@ -38,9 +38,10 @@ void SocketBind::onKeyPress(SocketBind::json data, SocketBind::wsuser user) {
     player->setKey(static_cast<Player::ArrowKey>(key));
 }
 
+// {key:<num>}
 void SocketBind::onKeyRelease(SocketBind::json data, SocketBind::wsuser user) {
     auto player = getPlayerByUser(user);
     auto key = data["key"].get<int>();
-    player->setKey(static_cast<Player::ArrowKey>(key));
+    player->removeKey(static_cast<Player::ArrowKey>(key));
 }
 

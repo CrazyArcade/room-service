@@ -7,7 +7,6 @@
 
 class Player : public Entity {
 public:
-    Player();
 
     ~Player() = default;
 
@@ -16,7 +15,7 @@ public:
     }
 
     enum ArrowKey {
-        LEFT = 0, RIGHT = 1, UP = 2, DOWN = 3
+        kLEFT = 0, kRIGHT = 1, kUP = 2, kDOWN = 3
     };
 
     enum Status {
@@ -33,13 +32,14 @@ public:
 
     std::string getName() const { return this->_name; }
 
-    std::string *getObjectIDPtr();
+    objectID *getObjectIDPtr();
     Status getStatus() const;
     void setStatus(Status status);
     void setKey(ArrowKey k);
     void removeKey(ArrowKey k);
 
 private:
+    Player();
     std::string _name;
     std::time_t _keyRecord[4] = {0};
     Status status;

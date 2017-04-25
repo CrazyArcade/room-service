@@ -1,7 +1,7 @@
 #ifndef SERVER_ENTITY_H
 #define SERVER_ENTITY_H
 
-#include "src/utils.h"
+#include "src/utils/objectid.h"
 #include <memory>
 
 struct Position {

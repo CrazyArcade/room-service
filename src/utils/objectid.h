@@ -1,4 +1,10 @@
-#include "utils.h"
+#ifndef SERVER_OBJECTID_H
+#define SERVER_OBJECTID_H
+
+#include "uuid/uuid.h"
+#include <string>
+
+using objectID = std::string;
 
 const objectID compassUUID(const uuid_t t) {
     objectID id;
@@ -27,8 +33,10 @@ const objectID compassUUID(const uuid_t t) {
 }
 
 
-const objectID generateID() {
+inline const objectID generateID() {
     uuid_t t;
     uuid_generate(t);
     return compassUUID(t);
 }
+
+#endif //SERVER_OBJECTID_H
