@@ -14,6 +14,6 @@ std::shared_ptr<Player> Room::getPlayerByObjectID(objectID id) {
     return find->second;
 }
 
-void Room::deletePlayer(std::shared_ptr<Player> player) {
-    this->playerList.erase(player->getObjectID());
+void Room::deletePlayerByObjectID(objectID id) {
+    this->playerList.erase(id);
 }

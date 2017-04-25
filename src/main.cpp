@@ -1,14 +1,13 @@
-#include <iostream>
 #include <uWS/uWS.h>
 #include "socket_bind.h"
 
 int main() {
     uWS::Hub h;
-    auto io = new SocketBind(h);
+    auto io = new SocketBind(&h);
 
     h.onConnection([&](uWS::WebSocket<uWS::SERVER> *ws, uWS::HttpRequest req) {
-        std::cout << "new websocket connection" << std::endl;
         io->addUser(ws);
+        LOG_INFO << "new websocket connection";
     });
 
     h.onMessage([&io](uWS::WebSocket<uWS::SERVER> *ws, char *message, size_t length, uWS::OpCode opCode) {
@@ -17,8 +16,8 @@ int main() {
     });
 
     h.onDisconnection([&io](uWS::WebSocket<uWS::SERVER> *ws, int code, char *message, size_t length) {
-        std::cout << "websocket connection closed: " << code << std::endl;
         io->delUser(ws);
+        LOG_INFO << "websocket connection closed: " << code;
     });
 
 //    h.onError();
@@ -30,9 +29,9 @@ int main() {
     }, 0, perFrameTime);
 
     if (h.listen(4000)) {
-        std::cout << "start" << std::endl;
+        LOG_INFO << "start";
     } else {
-        std::cerr << "Can't listen at port 4000" << std::endl;
+        LOG_INFO << "Can't listen at port 4000";
     }
 
     h.run();

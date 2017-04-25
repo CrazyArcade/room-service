@@ -1,11 +1,5 @@
 #include "socket_bind.h"
 
-inline std::shared_ptr<Player> getPlayerByUser(SocketBind::wsuser user) {
-    return Room::getInstance()->getPlayerByObjectID(
-            *static_cast<std::string *>(user->getUserData())
-    );
-}
-
 void SocketBind::init() {
     this->on(Opcode::WELCOME, &SocketBind::onWelcome);
     this->on(Opcode::KEY_PRESS, &SocketBind::onKeyPress);
@@ -31,7 +25,7 @@ void SocketBind::onWelcome(SocketBind::json data, SocketBind::wsuser user) {
     // only when player first join and don't have a name, set it
     if (player->getName().empty()) {
         player->setName(name);
-        std::cout << "player id: " << player->getObjectID() << ", player name: " << player->getName() << std::endl;
+        LOG_INFO << "new player id: " << player->getObjectID() << ", player name: " << player->getName();
         res["msg"] = "ok";
         this->emit(Opcode::GOTIT, res, user);
     }
