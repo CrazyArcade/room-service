@@ -4,6 +4,13 @@
 #include "entity.h"
 #include <string>
 #include <ctime>
+#include <algorithm>
+
+struct Attr {
+    std::uint8_t speed;
+    std::uint8_t power;
+    std::uint8_t bubble;
+};
 
 class Player : public Entity {
 public:
@@ -15,15 +22,15 @@ public:
     }
 
     enum ArrowKey {
-        kLEFT = 0, kRIGHT = 1, kUP = 2, kDOWN = 3
+        kLEFT, kRIGHT, kUP, kDOWN, NONE,
     };
 
     enum Status {
-        FREE,
         MOVE_LEFT,
         MOVE_RIGHT,
         MOVE_UP,
         MOVE_DOWN,
+        FREE,
         FREEZE,
         DIE
     };
@@ -37,12 +44,15 @@ public:
     void setStatus(Status status);
     void setKey(ArrowKey k);
     void removeKey(ArrowKey k);
-
+    ArrowKey currentArrowKey();
+    void update();
 private:
-    Player();
+    Player(std::uint8_t speed, std::uint8_t power, std::uint8_t bubble);
     std::string _name;
     std::time_t _keyRecord[4] = {0};
     Status status;
+    Attr attr;
+
 };
 
 #endif //SERVER_PLAYER_H

@@ -21,7 +21,6 @@
 class SocketBind {
 public:
     SocketBind(uWS::Hub *h) : h(h) { this->init(); };
-
     ~SocketBind() = default;
 
     using wsuser = uWS::WebSocket<uWS::SERVER> *;
@@ -34,7 +33,7 @@ public:
         KEY_RELEASE,
 
         GOTIT = 20,
-        PLAYER_POS_UPDATE,
+        PLAYER_UPDATE,
     };
 
     void on(Opcode code, callback fn) {
