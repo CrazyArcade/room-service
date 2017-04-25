@@ -2,11 +2,10 @@
 #define SERVER_API_H
 
 #include <uWS/uWS.h>
+#include "src/utils/log.h"
 #include "json.hpp"
 #include <string>
-#include <cstdint>
 #include <unordered_map>
-#include <unordered_set>
 #include "utils.h"
 #include "src/controller/room.h"
 
@@ -21,7 +20,7 @@
 
 class SocketBind {
 public:
-    SocketBind(uWS::Hub &h) : h(h) { this->init(); };
+    SocketBind(uWS::Hub *h) : h(h) { this->init(); };
 
     ~SocketBind() = default;
 
@@ -54,12 +53,12 @@ public:
             Opcode code = static_cast<Opcode>(j["o"].get<int>());
 
             if (funcList.find(code) == funcList.cend()) {
-//                CROW_LOG_WARNING << "Opcode " << static_cast<int>(transform_enum(code)) << " is not found";
+                LOG_WARN << "Opcode " << static_cast<int>(transform_enum(code)) << " is not found";
             } else {
                 (this->*funcList[code])(data, user);
             }
         } catch (std::invalid_argument e) {
-//            CROW_LOG_ERROR << e.what();
+            LOG_ERROR << e.what();
         } catch (...) {}
     };
 
@@ -76,23 +75,22 @@ public:
                 {"o", static_cast<int>(transform_enum(code))},
                 {"d", body}
         };
-        h.getDefaultGroup<uWS::SERVER>().broadcast(data, data.size(), uWS::OpCode::TEXT);
+        std::string message = data.dump();
+        (*h).getDefaultGroup<uWS::SERVER>().broadcast(message.c_str(), message.size(), uWS::OpCode::TEXT);
     };
 
     void addUser(wsuser user) {
         auto player = Room::getInstance()->createPlayer();
         auto id = player->getObjectIDPtr();
         user->setUserData(static_cast<void *>(id));
-        userList.insert(user);
     };
 
     void delUser(wsuser user) {
+        Room::getInstance()->deletePlayerByObjectID(getObjectIDByUser(user));
         user->setUserData(nullptr);
-        userList.erase(user);
     };
-    std::unordered_set<wsuser> userList;
 private:
-    uWS::Hub h;
+    uWS::Hub *h;
     void init();
 
     struct EnumClassHash {
@@ -103,6 +101,16 @@ private:
     };
 
     std::unordered_map<SocketBind::Opcode, SocketBind::callback, EnumClassHash> funcList;
+
+    inline objectID getObjectIDByUser(SocketBind::wsuser user) {
+        return *static_cast<std::string *>(user->getUserData());
+    }
+
+    inline std::shared_ptr<Player> getPlayerByUser(SocketBind::wsuser user) {
+        return Room::getInstance()->getPlayerByObjectID(
+                getObjectIDByUser(user)
+        );
+    }
 
 private:
     // SocketBind
