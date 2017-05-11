@@ -1,6 +1,6 @@
 #include "player.h"
 
-Player::Player(std::uint8_t speed = 2, std::uint8_t power = 1, std::uint8_t bubble = 1) {
+Player::Player(std::uint8_t speed, std::uint8_t power, std::uint8_t bubble) {
     attr.speed = speed;
     attr.power = power;
     attr.bubble = bubble;

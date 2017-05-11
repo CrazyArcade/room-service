@@ -1,7 +1,7 @@
 #include "entity.h"
 
 Entity::Entity() {
-    this->_id = generateID();
+    this->_id = ObjectID::generateID();
 }
 
 Entity::~Entity() {}

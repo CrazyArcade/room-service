@@ -14,11 +14,11 @@ struct Attr {
 
 class Player : public Entity {
 public:
-
+    Player(std::uint8_t speed, std::uint8_t power, std::uint8_t bubble);
     ~Player() = default;
 
-    static std::shared_ptr<Player> Factory() {
-        return std::make_shared<Player>();
+    static std::shared_ptr<Player> Factory(std::uint8_t speed = 2, std::uint8_t power = 1, std::uint8_t bubble = 1) {
+        return std::make_shared<Player>(speed, power, bubble);
     }
 
     enum ArrowKey {
@@ -47,7 +47,6 @@ public:
     ArrowKey currentArrowKey();
     void update();
 private:
-    Player(std::uint8_t speed, std::uint8_t power, std::uint8_t bubble);
     std::string _name;
     std::time_t _keyRecord[4] = {0};
     Status status;
