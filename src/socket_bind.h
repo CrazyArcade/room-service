@@ -54,6 +54,7 @@ public:
             if (funcList.find(code) == funcList.cend()) {
                 LOG_WARN << "Opcode " << static_cast<int>(transform_enum(code)) << " is not found";
             } else {
+                LOG_DEBUG << "Opcode: " << static_cast<int>(transform_enum(code)) << " find";
                 (this->*funcList[code])(data, user);
             }
         } catch (std::invalid_argument e) {

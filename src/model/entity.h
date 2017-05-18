@@ -12,7 +12,7 @@ struct Position {
 class Entity {
 public:
     Entity();
-    ~Entity();
+    virtual ~Entity();
     objectID getObjectID() const;
     void setPositionX(int x);
     void setPositionY(int y);

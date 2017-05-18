@@ -2,6 +2,7 @@
 #define SERVER_PLAYER_H
 
 #include "entity.h"
+#include "src/utils/utils.h"
 #include <string>
 #include <ctime>
 #include <algorithm>
@@ -17,15 +18,12 @@ public:
     Player(std::uint8_t speed, std::uint8_t power, std::uint8_t bubble);
     ~Player() = default;
 
-    static std::shared_ptr<Player> Factory(std::uint8_t speed = 2, std::uint8_t power = 1, std::uint8_t bubble = 1) {
-        return std::make_shared<Player>(speed, power, bubble);
-    }
+    static std::shared_ptr<Player> Factory(std::uint8_t speed = 2, std::uint8_t power = 1, std::uint8_t bubble = 1);
 
-    enum ArrowKey {
+    enum class ArrowKey {
         kLEFT, kRIGHT, kUP, kDOWN, NONE,
     };
-
-    enum Status {
+    enum class Status {
         MOVE_LEFT,
         MOVE_RIGHT,
         MOVE_UP,
@@ -35,9 +33,9 @@ public:
         DIE
     };
 
-    void setName(std::string name) { this->_name = name; }
+    void setName(std::string name);
 
-    std::string getName() const { return this->_name; }
+    std::string getName() const;
 
     objectID *getObjectIDPtr();
     Status getStatus() const;
