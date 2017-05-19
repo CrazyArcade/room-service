@@ -13,7 +13,14 @@ public:
     }
 
     enum class Status {
-        PENDING, START, OVER
+        // wait player coming
+                WAITING,
+        // game starts, but some players is still loading.
+                PENDING,
+        // game starts
+                START,
+        // game over
+                OVER
     };
 
     Room(Room const &) = delete;

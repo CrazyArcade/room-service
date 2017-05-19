@@ -1,0 +1,32 @@
+namespace API;
+
+enum Direction:byte {
+    left = 0, right = 1, up = 2, down = 3
+}
+
+struct Vec2 {
+    x:int;
+    y:int;
+}
+
+table PlayerMove {
+    id:string;
+    direction:Direction;
+    pos:Vec2;
+}
+
+table PlayerOnMove {
+    id:string;
+    direction:Direction;
+}
+
+union MsgType {
+    PlayerMove,
+    PlayerOnMove
+}
+
+table Msg {
+    data:MsgType;
+}
+
+root_type Msg;
