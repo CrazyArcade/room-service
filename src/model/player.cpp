@@ -1,5 +1,6 @@
 #include "player.h"
 #include "src/utils/log.h"
+#include "src/controller/mapController.h"
 
 Player::Player(std::uint8_t speed, std::uint8_t power, std::uint8_t bubble) {
     attr.speed = speed;
@@ -16,26 +17,25 @@ void Player::setStatus(Player::Status status) {
     this->status = status;
 }
 
-void Player::setKey(Player::ArrowKey k) {
-    this->_keyRecord[transform_enum(k)] = std::time(nullptr);
-    LOG_DEBUG << this->_keyRecord[transform_enum(k)];
+void Player::setDirection(Player::Direction d) {
+    this->directions[transform_enum(d)] = std::time(nullptr);
+    LOG_DEBUG << this->directions[transform_enum(d)];
 }
 
-void Player::removeKey(Player::ArrowKey k) {
-    this->_keyRecord[transform_enum(k)] = 0;
+void Player::removeDirection(Player::Direction d) {
+    this->directions[transform_enum(d)] = 0;
 }
 
-Player::ArrowKey Player::currentArrowKey() {
-    ArrowKey key = ArrowKey::NONE;
+Player::Direction Player::currentDirection() {
+    Direction d = Direction::NONE;
     time_t max = 0;
     for (int i = 0; i < 4; ++i) {
-//        LOG_DEBUG << _keyRecord[i];
-        if (_keyRecord[i] > max) {
-            max = _keyRecord[i];
-            key = static_cast<ArrowKey>(i);
+        if (directions[i] > max) {
+            max = directions[i];
+            d = static_cast<Direction>(i);
         }
     }
-    return key;
+    return d;
 }
 
 objectID *Player::getObjectIDPtr() {
@@ -43,33 +43,7 @@ objectID *Player::getObjectIDPtr() {
 }
 
 void Player::update() {
-    if (status != Status::FREEZE && status != Status::DIE) {
-        ArrowKey key = currentArrowKey();
-//        LOG_DEBUG << transform_enum(key);
-        if (key != ArrowKey::NONE) {
-//            LOG_DEBUG << transform_enum(key);
-            status = static_cast<Status>(key);
-        }
-    }
-//    LOG_DEBUG << transform_enum(status);
-//    LOG_DEBUG << pos.x << "   " << pos.y;
-    // TODO check collision
-    switch (status) {
-        case Status::MOVE_LEFT:
-            pos.x -= attr.speed;
-            break;
-        case Status::MOVE_RIGHT:
-            pos.x += attr.speed;
-            break;
-        case Status::MOVE_UP :
-            pos.y += attr.speed;
-            break;
-        case Status::MOVE_DOWN:
-            pos.y -= attr.speed;
-            break;
-        default:
-            break;
-    }
+    move();
 }
 
 void Player::setName(const std::string name) {
@@ -82,6 +56,53 @@ std::string Player::getName() const {
 
 std::shared_ptr<Player> Player::Factory(uint8_t speed, uint8_t power, uint8_t bubble) {
     return std::make_shared<Player>(speed, power, bubble);
+}
+
+void Player::move() {
+    if (status == Status::FREE) {
+        Direction d = currentDirection();
+        auto map = MapController::getInstance()->getMap();
+        auto pair = nextPosition(d);
+        // center point
+        auto nextPos = pair.first;
+        // edge point
+        auto logicPos = pair.second;
+
+        auto coordPos = map->positionToTileCoord(logicPos);
+        LOG_DEBUG << "current pos: " << pos.x << ", " << pos.y
+                  << "  next pos: " << nextPos.x << ", " << nextPos.y;
+        if (map->isCanMove(coordPos)) {
+            pos = nextPos;
+        }
+    }
+}
+
+std::pair<APP::Vec2, APP::Vec2> Player::nextPosition(Player::Direction d) {
+    auto pos = getPosition();
+    APP::Vec2 nextPos(pos.x, pos.y), logicPos;
+
+    switch (d) {
+        case Direction::LEFT:
+            nextPos.x -= attr.speed;
+            logicPos.x = nextPos.x - WIDTH / 2;
+            break;
+        case Direction::RIGHT:
+            nextPos.x += attr.speed;
+            logicPos.x = nextPos.x + WIDTH / 2;
+            break;
+        case Direction::UP :
+            nextPos.y += attr.speed;
+            logicPos.y = nextPos.y + HEIGHT / 2;
+            break;
+        case Direction::DOWN:
+            nextPos.y -= attr.speed;
+            logicPos.y = nextPos.y - HEIGHT / 2;
+            break;
+        default:
+            break;
+    }
+    return std::make_pair(nextPos, logicPos);
+
 }
 
 

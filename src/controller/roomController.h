@@ -4,15 +4,15 @@
 #include "src/model/player.h"
 #include <unordered_map>
 
-class Room {
+class RoomController {
 public:
-    static Room *getInstance() {
-        static Room INSTANCE;
+    static RoomController *getInstance() {
+        static RoomController INSTANCE;
         INSTANCE.gameStatus = Status::PENDING;
         return &INSTANCE;
     }
 
-    enum class Status {
+    enum class Status : std::uint8_t {
         // wait player coming
                 WAITING,
         // game starts, but some players is still loading.
@@ -23,8 +23,8 @@ public:
                 OVER
     };
 
-    Room(Room const &) = delete;
-    void operator=(Room const &) = delete;
+    RoomController(RoomController const &) = delete;
+    void operator=(RoomController const &) = delete;
     std::shared_ptr<Player> createPlayer();
     std::shared_ptr<Player> getPlayerByObjectID(objectID id);
     void deletePlayerByObjectID(objectID id);
@@ -32,7 +32,7 @@ public:
     void update();
 
 private:
-    Room() {};
+    RoomController() {};
     std::unordered_map<objectID, std::shared_ptr<Player>> playerList;
     Status gameStatus;
 

@@ -7,7 +7,7 @@
 #include <string>
 #include <unordered_map>
 #include "src/utils/utils.h"
-#include "src/controller/room.h"
+#include "src/controller/roomController.h"
 
 /*
  * json fomart
@@ -80,13 +80,13 @@ public:
     };
 
     void addUser(wsuser user) {
-        auto player = Room::getInstance()->createPlayer();
+        auto player = RoomController::getInstance()->createPlayer();
         auto id = player->getObjectIDPtr();
         user->setUserData(static_cast<void *>(id));
     };
 
     void delUser(wsuser user) {
-        Room::getInstance()->deletePlayerByObjectID(getObjectIDByUser(user));
+        RoomController::getInstance()->deletePlayerByObjectID(getObjectIDByUser(user));
         user->setUserData(nullptr);
     };
 private:
@@ -107,7 +107,7 @@ private:
     }
 
     inline std::shared_ptr<Player> getPlayerByUser(SocketBind::wsuser user) {
-        return Room::getInstance()->getPlayerByObjectID(
+        return RoomController::getInstance()->getPlayerByObjectID(
                 getObjectIDByUser(user)
         );
     }

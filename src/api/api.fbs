@@ -1,7 +1,7 @@
 namespace API;
 
 enum Direction:byte {
-    left = 0, right = 1, up = 2, down = 3
+    left = 0, right = 1, up = 2, down = 3, none = 4
 }
 
 struct Vec2 {

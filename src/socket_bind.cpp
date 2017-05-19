@@ -2,8 +2,8 @@
 
 void SocketBind::init() {
     this->on(Opcode::WELCOME, &SocketBind::onWelcome);
-    this->on(Opcode::KEY_PRESS, &SocketBind::onKeyPress);
-    this->on(Opcode::KEY_RELEASE, &SocketBind::onKeyRelease);
+    //this->on(Opcode::KEY_PRESS, &SocketBind::onKeyPress);
+    //this->on(Opcode::KEY_RELEASE, &SocketBind::onKeyRelease);
 }
 
 // player sends pickname
@@ -31,18 +31,18 @@ void SocketBind::onWelcome(SocketBind::json data, SocketBind::wsuser user) {
     }
 }
 
-// {key:<num>}
-void SocketBind::onKeyPress(SocketBind::json data, SocketBind::wsuser user) {
-    auto player = getPlayerByUser(user);
-    auto key = data["key"].get<int>();
-    LOG_DEBUG << key;
-    player->setKey(static_cast<Player::ArrowKey>(key));
-}
-
-// {key:<num>}
-void SocketBind::onKeyRelease(SocketBind::json data, SocketBind::wsuser user) {
-    auto player = getPlayerByUser(user);
-    auto key = data["key"].get<int>();
-    player->removeKey(static_cast<Player::ArrowKey>(key));
-}
+//// {key:<num>}
+//void SocketBind::onKeyPress(SocketBind::json data, SocketBind::wsuser user) {
+//    auto player = getPlayerByUser(user);
+//    auto key = data["key"].get<int>();
+//    LOG_DEBUG << key;
+//    player->setKey(static_cast<Player::ArrowKey>(key));
+//}
+//
+//// {key:<num>}
+//void SocketBind::onKeyRelease(SocketBind::json data, SocketBind::wsuser user) {
+//    auto player = getPlayerByUser(user);
+//    auto key = data["key"].get<int>();
+//    player->removeKey(static_cast<Player::ArrowKey>(key));
+//}
 
