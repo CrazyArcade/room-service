@@ -9,17 +9,18 @@
 #include <utility>
 
 struct Attr {
-    std::uint8_t speed;
-    std::uint8_t power;
-    std::uint8_t bubble;
+    uint8_t speed;
+    uint8_t damage;
+    uint8_t maxBubble;
+    uint8_t currentBubble;
 };
 
 class Player : public Entity {
 public:
-    Player(std::uint8_t speed, std::uint8_t power, std::uint8_t bubble);
+    Player(std::uint8_t speed, std::uint8_t damage, std::uint8_t maxBubble);
     ~Player() = default;
 
-    static std::shared_ptr<Player> Factory(std::uint8_t speed = 2, std::uint8_t power = 1, std::uint8_t bubble = 1);
+    static std::shared_ptr<Player> Factory(std::uint8_t speed = 2, std::uint8_t damage = 1, std::uint8_t bubble = 1);
 
     enum class Direction : std::uint8_t {
         LEFT,
@@ -44,7 +45,6 @@ public:
     };
 
     void setName(std::string name);
-
     std::string getName() const;
 
     objectID *getObjectIDPtr();
@@ -54,6 +54,12 @@ public:
     void removeDirection(Direction k);
     Direction currentDirection();
     void update();
+
+    uint8_t getDamage();
+
+    bool isCanSetBubble();
+    void setBubble();
+    void boomBubble();
 
     void move();
 private:

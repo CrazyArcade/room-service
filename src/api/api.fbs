@@ -1,28 +1,100 @@
 namespace API;
 
 enum Direction:byte {
-    left = 0, right = 1, up = 2, down = 3, none = 4
+    LEFT = 0, RIGHT = 1, UP = 2, DOWN = 3, NONE = 4
 }
 
-struct Vec2 {
+enum PropType:byte {
+    SPEED_UP, DAMAGE_UP, BUBBLE_UP
+}
+
+enum PlayerStatus:byte {
+    FREE, FREEZE, DIE
+}
+
+enum GameStatus:byte {
+    WAITING, PENDING, START, OVER
+}
+
+table PlayerJoin {
+    id:string;
+    x:int;
+    y:int;
+}
+// receiver and sender
+table PlayerPosChange {
+    id:string; // player id
+    direction:Direction;
     x:int;
     y:int;
 }
 
-table PlayerMove {
-    id:string;
-    direction:Direction;
-    pos:Vec2;
+// receiver
+table PlayerSetBubble {
+    id:string; // player id
+    x:int;
+    y:int;
 }
 
-table PlayerOnMove {
-    id:string;
-    direction:Direction;
+// sender
+table BubbleSet {
+    id:string; // maxBubble id
+    x:int;
+    y:int;
+    damage:ubyte;
 }
+
+// sender
+table BubbleBoom {
+    id:string; // maxBubble id
+}
+
+// sender
+table PropSet {
+    id:string; // maxBubble id
+    x:int;
+    y:int;
+    type:PropType;
+}
+
+// sender
+table PlayerEatProp {
+    player_id:string;
+    bubble_id:string;
+}
+
+// sender
+table PlayerAttrChange {
+    speed:ubyte;
+    damage:ubyte;
+    maxBubble:ubyte;
+}
+
+// sender
+table PlayerStatusChange {
+    id:string;
+    status:PlayerStatus;
+}
+
+table GameStatusChange {
+    status:GameStatus;
+}
+
+
 
 union MsgType {
-    PlayerMove,
-    PlayerOnMove
+    PlayerJoin,
+    PlayerPosChange,
+    PlayerSetBubble,
+
+    BubbleSet,
+    BubbleBoom,
+    PropSet,
+    PlayerEatProp,
+    PlayerAttrChange,
+    PlayerStatusChange,
+
+    GameStatusChange
 }
 
 table Msg {

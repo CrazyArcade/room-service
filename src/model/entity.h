@@ -2,7 +2,7 @@
 #define SERVER_ENTITY_H
 
 #include "src/utils/objectid.h"
-#include "src/app.h"
+#include "src/common.h"
 #include <memory>
 
 class Entity {

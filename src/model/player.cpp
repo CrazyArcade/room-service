@@ -2,10 +2,10 @@
 #include "src/utils/log.h"
 #include "src/controller/mapController.h"
 
-Player::Player(std::uint8_t speed, std::uint8_t power, std::uint8_t bubble) {
+Player::Player(std::uint8_t speed, std::uint8_t damage, std::uint8_t bubble) {
     attr.speed = speed;
-    attr.power = power;
-    attr.bubble = bubble;
+    attr.damage = damage;
+    attr.maxBubble = attr.currentBubble = bubble;
     status = Status::FREE;
 }
 
@@ -43,7 +43,7 @@ objectID *Player::getObjectIDPtr() {
 }
 
 void Player::update() {
-    move();
+    //move();
 }
 
 void Player::setName(const std::string name) {
@@ -54,8 +54,8 @@ std::string Player::getName() const {
     return this->_name;
 }
 
-std::shared_ptr<Player> Player::Factory(uint8_t speed, uint8_t power, uint8_t bubble) {
-    return std::make_shared<Player>(speed, power, bubble);
+std::shared_ptr<Player> Player::Factory(uint8_t speed, uint8_t damage, uint8_t bubble) {
+    return std::make_shared<Player>(speed, damage, bubble);
 }
 
 void Player::move() {
@@ -69,8 +69,8 @@ void Player::move() {
         auto logicPos = pair.second;
 
         auto coordPos = map->positionToTileCoord(logicPos);
-        LOG_DEBUG << "current pos: " << pos.x << ", " << pos.y
-                  << "  next pos: " << nextPos.x << ", " << nextPos.y;
+//        LOG_DEBUG << "current pos: " << pos.x << ", " << pos.y
+//                  << "  next pos: " << nextPos.x << ", " << nextPos.y;
         if (map->isCanMove(coordPos)) {
             pos = nextPos;
         }
@@ -103,6 +103,26 @@ std::pair<APP::Vec2, APP::Vec2> Player::nextPosition(Player::Direction d) {
     }
     return std::make_pair(nextPos, logicPos);
 
+}
+
+bool Player::isCanSetBubble() {
+    return attr.currentBubble > 0;
+}
+
+void Player::boomBubble() {
+    if (attr.maxBubble > attr.currentBubble) {
+        ++attr.currentBubble;
+    }
+}
+
+void Player::setBubble() {
+    if (attr.currentBubble > 0) {
+        --attr.currentBubble;
+    }
+}
+
+uint8_t Player::getDamage() {
+    return attr.damage;
 }
 
 

@@ -1,8 +1,9 @@
 #ifndef SERVER_BASE_MAP_H
 #define SERVER_BASE_MAP_H
 
-#include "src/app.h"
+#include "src/common.h"
 #include <vector>
+#include <random>
 
 class BaseMap {
 public:
@@ -47,11 +48,30 @@ public:
         return APP::Vec2(x, y);
     }
 
+    APP::Vec2 centrePos(const APP::Vec2 &pos) {
+        return tileCoordToPosition(positionToTileCoord(pos));
+    }
+
+
+    APP::Vec2 getBornPoint() {
+        if (bornPoint.size() == 0) return APP::Vec2(0, 0);
+
+        std::mt19937 rd;
+        rd.seed(std::random_device()());
+        std::uniform_int_distribution<int> dist(0, static_cast<int>(bornPoint.size() - 1));
+
+        int i = dist(rd);
+        auto point = bornPoint[i];
+        bornPoint.erase(bornPoint.cbegin() + i);
+        return tileCoordToPosition(APP::Vec2(point.second, point.first));
+    };
+
     virtual ~BaseMap() {
     };
 
 protected:
     std::vector<int> mapData;
+    std::vector<std::pair<int, int>> bornPoint;
 };
 
 

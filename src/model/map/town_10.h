@@ -33,6 +33,11 @@ public:
             }
         }
 
+        bornPoint.push_back(std::make_pair(0, 0));
+        bornPoint.push_back(std::make_pair(1, 14));
+        bornPoint.push_back(std::make_pair(11, 0));
+        bornPoint.push_back(std::make_pair(12, 14));
+
     }
 };
 

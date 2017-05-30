@@ -1,11 +1,17 @@
 #include <iostream>
 #include "roomController.h"
 
-std::shared_ptr<Player> RoomController::createPlayer() {
-    auto player = Player::Factory();
-    player->setPosition(APP::Vec2(0, 0));
-    this->playerList.insert({player->getObjectID(), player});
-    return player;
+std::shared_ptr<Player> RoomController::addPlayer(const APP::Vec2 &pos) {
+    if (playerNum > 0) {
+        auto player = Player::Factory();
+        playerNum--;
+
+        player->setPosition(pos);
+        this->playerList.insert({player->getObjectID(), player});
+
+        return player;
+    }
+    return nullptr;
 }
 
 std::shared_ptr<Player> RoomController::getPlayerByObjectID(objectID id) {
@@ -18,6 +24,7 @@ std::shared_ptr<Player> RoomController::getPlayerByObjectID(objectID id) {
 
 void RoomController::deletePlayerByObjectID(objectID id) {
     this->playerList.erase(id);
+    playerNum++;
 }
 
 void RoomController::updatePlayer() {
@@ -28,5 +35,15 @@ void RoomController::updatePlayer() {
 
 void RoomController::update() {
     // if (gameStatus != Status::START) return;
-    updatePlayer();
+    //updatePlayer();
+}
+
+void RoomController::setPlayerNum(int num) {
+    playerNum = num;
+}
+
+std::shared_ptr<Bubble> RoomController::createBubble(const objectID &playerID, const APP::Vec2 &pos) {
+    auto bubble = Bubble::Factory(playerID, pos, playerList[playerID]->getDamage());
+    bubbleList.insert({bubble->getObjectID(), bubble});
+    return bubble;
 }
