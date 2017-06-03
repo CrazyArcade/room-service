@@ -4,10 +4,9 @@
 #include <uWS/uWS.h>
 #include "src/utils/log.h"
 #include "src/utils/utils.h"
-#include "src/controller/mapController.h"
-#include "src/controller/roomController.h"
 #include "flatbuffers/flatbuffers.h"
 #include "api/api_generated.h"
+#include "room.h"
 #include <string>
 #include <unordered_map>
 
@@ -21,19 +20,19 @@ public:
     using callback = void (Server::*)(const API::Msg *, uint8_t *, size_t, wsuser);
 
     void addUser(wsuser user) {
-        auto pos = _map->getMap()->getBornPoint();
-        auto player = _room->addPlayer(pos);
+        auto player = _room->onPlayerJoin();
+        if (player) {
+            auto id = player->getObjectIDPtr();
+            user->setUserData(static_cast<void *>(id));
 
-        auto id = player->getObjectIDPtr();
-        user->setUserData(static_cast<void *>(id));
+            onPlayerConnect(user);
 
-        onPlayerConnect(user);
-
-        LOG_INFO << "player connect, id: " << id->data();
+            LOG_INFO << "player connect, id: " << id->data();
+        }
     };
 
     void delUser(wsuser user) {
-        RoomController::getInstance()->deletePlayerByObjectID(getObjectIDByUser(user));
+        _room->onPlayerLeave(getObjectIDByUser(user));
         user->setUserData(nullptr);
     };
 
@@ -55,8 +54,7 @@ public:
 
 private:
     uWS::Hub *h;
-    MapController *_map;
-    RoomController *_room;
+    Room *_room;
 
     void init();
 
@@ -74,9 +72,7 @@ private:
     }
 
     inline std::shared_ptr<Player> getPlayerByUser(Server::wsuser user) {
-        return RoomController::getInstance()->getPlayerByObjectID(
-                getObjectIDByUser(user)
-        );
+        return _room->playerList[getObjectIDByUser(user)];
     }
 
 

@@ -3,13 +3,12 @@
 #include "app.h"
 
 int main() {
+
     uWS::Hub h;
     auto server = new Server(&h);
-    auto map = MapController::getInstance();
-    auto room = RoomController::getInstance();
+    auto room = Room::getInstance();
 
-    map->setMap("town_10");
-    room->setPlayerNum(4);
+    room->setMap("town_10");
 
     h.onConnection([&](uWS::WebSocket<uWS::SERVER> *ws, uWS::HttpRequest req) {
         server->addUser(ws);
@@ -30,7 +29,7 @@ int main() {
     constexpr int perFrameTime = 500; //1000 / 16;
     Timer timer(h.getLoop());
     timer.start([](Timer *handle) {
-        //RoomController::getInstance()->update();
+        //room->update();
     }, 0, perFrameTime);
 
     if (h.listen(4000)) {

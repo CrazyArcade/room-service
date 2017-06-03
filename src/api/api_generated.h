@@ -178,7 +178,8 @@ namespace API {
         enum {
             VT_ID = 4,
             VT_X = 6,
-            VT_Y = 8
+            VT_Y = 8,
+            VT_IS_LOCAL = 10
         };
 
         const flatbuffers::String *id() const { return GetPointer<const flatbuffers::String *>(VT_ID); }
@@ -187,12 +188,15 @@ namespace API {
 
         int32_t y() const { return GetField<int32_t>(VT_Y, 0); }
 
+        bool is_local() const { return GetField<uint8_t>(VT_IS_LOCAL, 0) != 0; }
+
         bool Verify(flatbuffers::Verifier &verifier) const {
             return VerifyTableStart(verifier) &&
                    VerifyField<flatbuffers::uoffset_t>(verifier, VT_ID) &&
                    verifier.Verify(id()) &&
                    VerifyField<int32_t>(verifier, VT_X) &&
                    VerifyField<int32_t>(verifier, VT_Y) &&
+                   VerifyField<uint8_t>(verifier, VT_IS_LOCAL) &&
                    verifier.EndTable();
         }
     };
@@ -207,12 +211,16 @@ namespace API {
 
         void add_y(int32_t y) { fbb_.AddElement<int32_t>(PlayerJoin::VT_Y, y, 0); }
 
+        void add_is_local(bool is_local) {
+            fbb_.AddElement<uint8_t>(PlayerJoin::VT_IS_LOCAL, static_cast<uint8_t>(is_local), 0);
+        }
+
         PlayerJoinBuilder(flatbuffers::FlatBufferBuilder &_fbb) : fbb_(_fbb) { start_ = fbb_.StartTable(); }
 
         PlayerJoinBuilder &operator=(const PlayerJoinBuilder &);
 
         flatbuffers::Offset<PlayerJoin> Finish() {
-            auto o = flatbuffers::Offset<PlayerJoin>(fbb_.EndTable(start_, 3));
+            auto o = flatbuffers::Offset<PlayerJoin>(fbb_.EndTable(start_, 4));
             return o;
         }
     };
@@ -220,19 +228,22 @@ namespace API {
     inline flatbuffers::Offset<PlayerJoin> CreatePlayerJoin(flatbuffers::FlatBufferBuilder &_fbb,
                                                             flatbuffers::Offset<flatbuffers::String> id = 0,
                                                             int32_t x = 0,
-                                                            int32_t y = 0) {
+                                                            int32_t y = 0,
+                                                            bool is_local = false) {
         PlayerJoinBuilder builder_(_fbb);
         builder_.add_y(y);
         builder_.add_x(x);
         builder_.add_id(id);
+        builder_.add_is_local(is_local);
         return builder_.Finish();
     }
 
     inline flatbuffers::Offset<PlayerJoin> CreatePlayerJoinDirect(flatbuffers::FlatBufferBuilder &_fbb,
                                                                   const char *id = nullptr,
                                                                   int32_t x = 0,
-                                                                  int32_t y = 0) {
-        return CreatePlayerJoin(_fbb, id ? _fbb.CreateString(id) : 0, x, y);
+                                                                  int32_t y = 0,
+                                                                  bool is_local = false) {
+        return CreatePlayerJoin(_fbb, id ? _fbb.CreateString(id) : 0, x, y, is_local);
     }
 
     struct PlayerPosChange FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
@@ -308,24 +319,8 @@ namespace API {
     }
 
     struct PlayerSetBubble FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
-        enum {
-            VT_ID = 4,
-            VT_X = 6,
-            VT_Y = 8
-        };
-
-        const flatbuffers::String *id() const { return GetPointer<const flatbuffers::String *>(VT_ID); }
-
-        int32_t x() const { return GetField<int32_t>(VT_X, 0); }
-
-        int32_t y() const { return GetField<int32_t>(VT_Y, 0); }
-
         bool Verify(flatbuffers::Verifier &verifier) const {
             return VerifyTableStart(verifier) &&
-                   VerifyField<flatbuffers::uoffset_t>(verifier, VT_ID) &&
-                   verifier.Verify(id()) &&
-                   VerifyField<int32_t>(verifier, VT_X) &&
-                   VerifyField<int32_t>(verifier, VT_Y) &&
                    verifier.EndTable();
         }
     };
@@ -334,49 +329,33 @@ namespace API {
         flatbuffers::FlatBufferBuilder &fbb_;
         flatbuffers::uoffset_t start_;
 
-        void add_id(flatbuffers::Offset<flatbuffers::String> id) { fbb_.AddOffset(PlayerSetBubble::VT_ID, id); }
-
-        void add_x(int32_t x) { fbb_.AddElement<int32_t>(PlayerSetBubble::VT_X, x, 0); }
-
-        void add_y(int32_t y) { fbb_.AddElement<int32_t>(PlayerSetBubble::VT_Y, y, 0); }
-
         PlayerSetBubbleBuilder(flatbuffers::FlatBufferBuilder &_fbb) : fbb_(_fbb) { start_ = fbb_.StartTable(); }
 
         PlayerSetBubbleBuilder &operator=(const PlayerSetBubbleBuilder &);
 
         flatbuffers::Offset<PlayerSetBubble> Finish() {
-            auto o = flatbuffers::Offset<PlayerSetBubble>(fbb_.EndTable(start_, 3));
+            auto o = flatbuffers::Offset<PlayerSetBubble>(fbb_.EndTable(start_, 0));
             return o;
         }
     };
 
-    inline flatbuffers::Offset<PlayerSetBubble> CreatePlayerSetBubble(flatbuffers::FlatBufferBuilder &_fbb,
-                                                                      flatbuffers::Offset<flatbuffers::String> id = 0,
-                                                                      int32_t x = 0,
-                                                                      int32_t y = 0) {
+    inline flatbuffers::Offset<PlayerSetBubble> CreatePlayerSetBubble(flatbuffers::FlatBufferBuilder &_fbb) {
         PlayerSetBubbleBuilder builder_(_fbb);
-        builder_.add_y(y);
-        builder_.add_x(x);
-        builder_.add_id(id);
         return builder_.Finish();
-    }
-
-    inline flatbuffers::Offset<PlayerSetBubble> CreatePlayerSetBubbleDirect(flatbuffers::FlatBufferBuilder &_fbb,
-                                                                            const char *id = nullptr,
-                                                                            int32_t x = 0,
-                                                                            int32_t y = 0) {
-        return CreatePlayerSetBubble(_fbb, id ? _fbb.CreateString(id) : 0, x, y);
     }
 
     struct BubbleSet FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
         enum {
             VT_ID = 4,
-            VT_X = 6,
-            VT_Y = 8,
-            VT_DAMAGE = 10
+            VT_PLAYER_ID = 6,
+            VT_X = 8,
+            VT_Y = 10,
+            VT_DAMAGE = 12
         };
 
         const flatbuffers::String *id() const { return GetPointer<const flatbuffers::String *>(VT_ID); }
+
+        const flatbuffers::String *player_id() const { return GetPointer<const flatbuffers::String *>(VT_PLAYER_ID); }
 
         int32_t x() const { return GetField<int32_t>(VT_X, 0); }
 
@@ -388,6 +367,8 @@ namespace API {
             return VerifyTableStart(verifier) &&
                    VerifyField<flatbuffers::uoffset_t>(verifier, VT_ID) &&
                    verifier.Verify(id()) &&
+                   VerifyField<flatbuffers::uoffset_t>(verifier, VT_PLAYER_ID) &&
+                   verifier.Verify(player_id()) &&
                    VerifyField<int32_t>(verifier, VT_X) &&
                    VerifyField<int32_t>(verifier, VT_Y) &&
                    VerifyField<uint8_t>(verifier, VT_DAMAGE) &&
@@ -401,6 +382,10 @@ namespace API {
 
         void add_id(flatbuffers::Offset<flatbuffers::String> id) { fbb_.AddOffset(BubbleSet::VT_ID, id); }
 
+        void add_player_id(flatbuffers::Offset<flatbuffers::String> player_id) {
+            fbb_.AddOffset(BubbleSet::VT_PLAYER_ID, player_id);
+        }
+
         void add_x(int32_t x) { fbb_.AddElement<int32_t>(BubbleSet::VT_X, x, 0); }
 
         void add_y(int32_t y) { fbb_.AddElement<int32_t>(BubbleSet::VT_Y, y, 0); }
@@ -412,19 +397,21 @@ namespace API {
         BubbleSetBuilder &operator=(const BubbleSetBuilder &);
 
         flatbuffers::Offset<BubbleSet> Finish() {
-            auto o = flatbuffers::Offset<BubbleSet>(fbb_.EndTable(start_, 4));
+            auto o = flatbuffers::Offset<BubbleSet>(fbb_.EndTable(start_, 5));
             return o;
         }
     };
 
     inline flatbuffers::Offset<BubbleSet> CreateBubbleSet(flatbuffers::FlatBufferBuilder &_fbb,
                                                           flatbuffers::Offset<flatbuffers::String> id = 0,
+                                                          flatbuffers::Offset<flatbuffers::String> player_id = 0,
                                                           int32_t x = 0,
                                                           int32_t y = 0,
                                                           uint8_t damage = 0) {
         BubbleSetBuilder builder_(_fbb);
         builder_.add_y(y);
         builder_.add_x(x);
+        builder_.add_player_id(player_id);
         builder_.add_id(id);
         builder_.add_damage(damage);
         return builder_.Finish();
@@ -432,10 +419,12 @@ namespace API {
 
     inline flatbuffers::Offset<BubbleSet> CreateBubbleSetDirect(flatbuffers::FlatBufferBuilder &_fbb,
                                                                 const char *id = nullptr,
+                                                                const char *player_id = nullptr,
                                                                 int32_t x = 0,
                                                                 int32_t y = 0,
                                                                 uint8_t damage = 0) {
-        return CreateBubbleSet(_fbb, id ? _fbb.CreateString(id) : 0, x, y, damage);
+        return CreateBubbleSet(_fbb, id ? _fbb.CreateString(id) : 0, player_id ? _fbb.CreateString(player_id) : 0, x, y,
+                               damage);
     }
 
     struct BubbleBoom FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
@@ -613,20 +602,20 @@ namespace API {
         enum {
             VT_SPEED = 4,
             VT_DAMAGE = 6,
-            VT_BUBBLE = 8
+            VT_MAXBUBBLE = 8
         };
 
         uint8_t speed() const { return GetField<uint8_t>(VT_SPEED, 0); }
 
         uint8_t damage() const { return GetField<uint8_t>(VT_DAMAGE, 0); }
 
-        uint8_t bubble() const { return GetField<uint8_t>(VT_BUBBLE, 0); }
+        uint8_t maxBubble() const { return GetField<uint8_t>(VT_MAXBUBBLE, 0); }
 
         bool Verify(flatbuffers::Verifier &verifier) const {
             return VerifyTableStart(verifier) &&
                    VerifyField<uint8_t>(verifier, VT_SPEED) &&
                    VerifyField<uint8_t>(verifier, VT_DAMAGE) &&
-                   VerifyField<uint8_t>(verifier, VT_BUBBLE) &&
+                   VerifyField<uint8_t>(verifier, VT_MAXBUBBLE) &&
                    verifier.EndTable();
         }
     };
@@ -639,7 +628,9 @@ namespace API {
 
         void add_damage(uint8_t damage) { fbb_.AddElement<uint8_t>(PlayerAttrChange::VT_DAMAGE, damage, 0); }
 
-        void add_bubble(uint8_t bubble) { fbb_.AddElement<uint8_t>(PlayerAttrChange::VT_BUBBLE, bubble, 0); }
+        void add_maxBubble(uint8_t maxBubble) {
+            fbb_.AddElement<uint8_t>(PlayerAttrChange::VT_MAXBUBBLE, maxBubble, 0);
+        }
 
         PlayerAttrChangeBuilder(flatbuffers::FlatBufferBuilder &_fbb) : fbb_(_fbb) { start_ = fbb_.StartTable(); }
 
@@ -654,9 +645,9 @@ namespace API {
     inline flatbuffers::Offset<PlayerAttrChange> CreatePlayerAttrChange(flatbuffers::FlatBufferBuilder &_fbb,
                                                                         uint8_t speed = 0,
                                                                         uint8_t damage = 0,
-                                                                        uint8_t bubble = 0) {
+                                                                        uint8_t maxBubble = 0) {
         PlayerAttrChangeBuilder builder_(_fbb);
-        builder_.add_bubble(bubble);
+        builder_.add_maxBubble(maxBubble);
         builder_.add_damage(damage);
         builder_.add_speed(speed);
         return builder_.Finish();

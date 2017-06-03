@@ -1,6 +1,5 @@
 #include "player.h"
 #include "src/utils/log.h"
-#include "src/controller/mapController.h"
 
 Player::Player(std::uint8_t speed, std::uint8_t damage, std::uint8_t bubble) {
     attr.speed = speed;
@@ -59,22 +58,22 @@ std::shared_ptr<Player> Player::Factory(uint8_t speed, uint8_t damage, uint8_t b
 }
 
 void Player::move() {
-    if (status == Status::FREE) {
-        Direction d = currentDirection();
-        auto map = MapController::getInstance()->getMap();
-        auto pair = nextPosition(d);
-        // center point
-        auto nextPos = pair.first;
-        // edge point
-        auto logicPos = pair.second;
-
-        auto coordPos = map->positionToTileCoord(logicPos);
-//        LOG_DEBUG << "current pos: " << pos.x << ", " << pos.y
-//                  << "  next pos: " << nextPos.x << ", " << nextPos.y;
-        if (map->isCanMove(coordPos)) {
-            pos = nextPos;
-        }
-    }
+//    if (status == Status::FREE) {
+//        Direction d = currentDirection();
+//        auto map = MapController::getInstance()->getMap();
+//        auto pair = nextPosition(d);
+//        // center point
+//        auto nextPos = pair.first;
+//        // edge point
+//        auto logicPos = pair.second;
+//
+//        auto coordPos = map->positionToTileCoord(logicPos);
+////        LOG_DEBUG << "current pos: " << pos.x << ", " << pos.y
+////                  << "  next pos: " << nextPos.x << ", " << nextPos.y;
+//        if (map->isCanMove(coordPos)) {
+//            pos = nextPos;
+//        }
+//    }
 }
 
 std::pair<APP::Vec2, APP::Vec2> Player::nextPosition(Player::Direction d) {

@@ -20,6 +20,7 @@ table PlayerJoin {
     id:string;
     x:int;
     y:int;
+    is_local:bool;
 }
 // receiver and sender
 table PlayerPosChange {
@@ -31,14 +32,13 @@ table PlayerPosChange {
 
 // receiver
 table PlayerSetBubble {
-    id:string; // player id
-    x:int;
-    y:int;
+    //id:string;
 }
 
 // sender
 table BubbleSet {
     id:string; // maxBubble id
+    player_id:string;
     x:int;
     y:int;
     damage:ubyte;

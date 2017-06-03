@@ -11,3 +11,11 @@ void Bubble::boom() {
 bool Bubble::isCanBoom() {
     return time(nullptr) > boomAt;
 }
+
+uint8_t Bubble::getDamage() {
+    return damage;
+}
+
+const objectID &Bubble::getPlayerID() const {
+    return playerID;
+}
