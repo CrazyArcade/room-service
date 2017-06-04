@@ -46,6 +46,7 @@ int Map::at(const APP::Vec2 &coord) {
     else return 0;
 }
 
+
 APP::Vec2 Map::tileCoordToPosition(const APP::Vec2 &coord) {
     int x = coord.x * tileSize.width + tileSize.width / 2;
     int y = (mapSize.height - coord.y) * tileSize.height - tileSize.height / 2;
@@ -80,4 +81,9 @@ APP::Vec2 Map::getBornPoint() {
 int Map::getMaxPlayer() {
     return maxPlayer;
 }
+
+void Map::setTileType(const APP::Vec2 &coord, int type) {
+    mapData[coord.y * mapSize.width + coord.x] = type;
+}
+
 

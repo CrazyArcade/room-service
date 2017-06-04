@@ -20,7 +20,7 @@ public:
 
     inline bool isInMap(const APP::Vec2 &coord);
 
-    inline int at(const APP::Vec2 &coord);
+    int at(const APP::Vec2 &coord);
 
     APP::Vec2 tileCoordToPosition(const APP::Vec2 &coord);
 
@@ -31,6 +31,8 @@ public:
     APP::Vec2 getBornPoint();
 
     int getMaxPlayer();
+
+    inline void setTileType(const APP::Vec2 &coord, int type);
 
 private:
     APP::Size mapSize;

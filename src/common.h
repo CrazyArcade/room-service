@@ -23,27 +23,29 @@ namespace APP {
 
         bool operator==(const Vec2 &v2) const {
             return (x == v2.x) && (y == v2.y);
-        }
-
-        Vec2 &operator+=(const Vec2 &v) {
-            *this = *this + v;
-            return *this;
-        }
+        };
 
         Vec2 operator+(const Vec2 &v) const {
             auto x = this->x + v.x, y = this->y + v.y;
             return Vec2(x, y);
-        }
+        };
 
-        Vec2 &operator*=(uint8_t scale) {
-            *this = *this * scale;
+        Vec2 &operator+=(const Vec2 &v) {
+            *this = *this + v;
             return *this;
-        }
+        };
 
-        Vec2 operator*(uint8_t scale) const {
+        Vec2 operator*(int scale) const {
             auto x = this->x * scale, y = this->y * scale;
             return Vec2(x, y);
-        }
+        };
+
+        Vec2 &operator*=(int scale) {
+            *this = *this * scale;
+            return *this;
+        };
+
+
     };
 }
 
