@@ -32,7 +32,7 @@ public:
 
     int getMaxPlayer();
 
-    inline void setTileType(const APP::Vec2 &coord, int type);
+    void setTileType(const APP::Vec2 &coord, int type);
 
 private:
     APP::Size mapSize;
