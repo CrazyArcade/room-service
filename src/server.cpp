@@ -1,5 +1,5 @@
-#include "app.h"
-
+#include "server.h"
+#include "room.h"
 using namespace API;
 
 void Server::init() {
@@ -41,4 +41,25 @@ void Server::onPlayerSetBubble(const API::Msg *msg, uint8_t *raw, size_t size, S
     auto m = CreateMsg(builder, MsgType_BubbleSet, orc.Union());
     builder.Finish(m);
     this->emit(builder);
+}
+
+void Server::addUser(Server::wsuser user) {
+    auto player = _room->onPlayerJoin();
+    if (player) {
+        auto id = player->getObjectIDPtr();
+        user->setUserData(static_cast<void *>(id));
+
+        onPlayerConnect(user);
+
+        LOG_INFO << "player connect, id: " << id->data();
+    }
+}
+
+void Server::delUser(Server::wsuser user) {
+    _room->onPlayerLeave(getObjectIDByUser(user));
+    user->setUserData(nullptr);
+}
+
+std::shared_ptr<Player> Server::getPlayerByUser(Server::wsuser user) {
+    return _room->playerList[getObjectIDByUser(user)];
 }

@@ -1,7 +1,7 @@
 #include <uWS/uWS.h>
 #include "src/utils/log.h"
-#include "app.h"
-
+#include "server.h"
+#include "room.h"
 int main() {
 
     uWS::Hub h;
@@ -26,11 +26,11 @@ int main() {
 
 //    h.onError();
 
-    constexpr int perFrameTime = 500; //1000 / 16;
+    constexpr int delay = 100; // 100ms
     Timer timer(h.getLoop());
-    timer.start([](Timer *handle) {
-        //room->update();
-    }, 0, perFrameTime);
+    timer.start([&](Timer *handle) {
+        Room::getInstance()->gameLoop();
+    }, 0, delay);
 
     if (h.listen(4000)) {
         LOG_INFO << "start";

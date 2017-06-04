@@ -1,5 +1,5 @@
 #include "room.h"
-
+#include "server.h"
 std::shared_ptr<Player> Room::onPlayerJoin() {
     if (currentPlayer > 0) {
         auto player = Player::Factory();
@@ -38,7 +38,8 @@ std::shared_ptr<Bubble> Room::onPlayerSetBubble(const objectID &playerID) {
     }
 }
 
-void Room::bubbleBoom(std::shared_ptr<Bubble> bubble) {
+void Room::onBubbleBoom(std::shared_ptr<Bubble> bubble) {
+    auto id = bubble->getObjectID();
     auto playerID = bubble->getPlayerID();
     auto bubblePos = map->positionToTileCoord(bubble->getPosition());
     auto damage = bubble->getDamage();
@@ -62,11 +63,12 @@ void Room::bubbleBoom(std::shared_ptr<Bubble> bubble) {
             }
         }
     };
-    auto checkBoom = [this](const APP::Vec2 &pos, bool &isEnd) {
+    auto checkBox = [this](const APP::Vec2 &pos, bool &isEnd) {
         auto item = map->at(pos);
         if (item == Map::TILE_WALL) {
             isEnd = true;
         } else if (item == Map::TILE_BOX1 || item == Map::TILE_BOX2) {
+            // TODO prop
             map->setTileType(pos, map->TILE_EMPTY);
         }
     };
@@ -76,11 +78,22 @@ void Room::bubbleBoom(std::shared_ptr<Bubble> bubble) {
             if (isEnds[j]) continue;
             auto pos = bubblePos + dirs[j] * damage;
             checkPlayer(pos);
-            checkBoom(pos, isEnds[j]);
+            checkBox(pos, isEnds[j]);
         }
     }
+    bubbleList.erase(id);
 }
 
 void Room::onPlayerStatusChange(std::shared_ptr<Player> player, Player::Status status) {
     // TODO
+}
+
+void Room::gameLoop() {
+    for (auto &i : bubbleList) {
+        auto bubble = i.second;
+        if (bubble->isCanBoom()) {
+            onBubbleBoom(bubble);
+            // TODO
+        }
+    }
 }

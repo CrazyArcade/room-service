@@ -6,10 +6,12 @@
 #include "src/utils/utils.h"
 #include "flatbuffers/flatbuffers.h"
 #include "api/api_generated.h"
-#include "room.h"
 #include <string>
 #include <unordered_map>
+#include "src/model/player.h"
+#include "src/utils/objectid.h"
 
+class Room;
 
 class Server {
 public:
@@ -19,22 +21,9 @@ public:
     using wsuser = uWS::WebSocket<uWS::SERVER> *;
     using callback = void (Server::*)(const API::Msg *, uint8_t *, size_t, wsuser);
 
-    void addUser(wsuser user) {
-        auto player = _room->onPlayerJoin();
-        if (player) {
-            auto id = player->getObjectIDPtr();
-            user->setUserData(static_cast<void *>(id));
+    void addUser(wsuser user);;
 
-            onPlayerConnect(user);
-
-            LOG_INFO << "player connect, id: " << id->data();
-        }
-    };
-
-    void delUser(wsuser user) {
-        _room->onPlayerLeave(getObjectIDByUser(user));
-        user->setUserData(nullptr);
-    };
+    void delUser(wsuser user);;
 
     void handle(uint8_t *buf, size_t size, wsuser user) {
         auto msg = API::GetMsg(buf);
@@ -47,6 +36,7 @@ public:
 
 public:
     // Server
+    void loop();
     void onPlayerConnect(wsuser user);
     void onPlayerPosChange(const API::Msg *msg, uint8_t *raw, size_t size, wsuser = nullptr);
     void onPlayerSetBubble(const API::Msg *msg, uint8_t *raw, size_t size, wsuser = nullptr);
@@ -71,9 +61,7 @@ private:
         return *static_cast<std::string *>(user->getUserData());
     }
 
-    inline std::shared_ptr<Player> getPlayerByUser(Server::wsuser user) {
-        return _room->playerList[getObjectIDByUser(user)];
-    }
+    inline std::shared_ptr<Player> getPlayerByUser(Server::wsuser user);
 
 
     void on(API::MsgType code, callback fn) {

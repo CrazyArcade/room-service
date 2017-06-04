@@ -10,6 +10,8 @@
 #include <unordered_map>
 #include <memory>
 
+class Server;
+
 class Room {
 public:
     static Room *getInstance() {
@@ -61,7 +63,6 @@ public:
 
     void onPlayerStatusChange(std::shared_ptr<Player> player, Player::Status status);
 
-
     void gameLoop();
 
 private:
@@ -71,7 +72,7 @@ private:
     int maxPlayer;
     int currentPlayer;
 
-    void bubbleBoom(std::shared_ptr<Bubble> bubble);
+    void onBubbleBoom(std::shared_ptr<Bubble> bubble);
 
 };
 
