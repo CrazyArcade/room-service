@@ -14,6 +14,9 @@ public:
         TILE_WALL,
         TILE_BUBBLE,
 
+        TILE_PROP_SPEED = 100,
+        TILE_PROP_BUBBLE,
+        TILE_PROP_DAMAGE
     };
 
     Map(const std::string &name);
@@ -33,6 +36,11 @@ public:
     int getMaxPlayer();
 
     void setTileType(const APP::Vec2 &coord, int type);
+
+    void removeTile(const APP::Vec2 &coord);
+
+    void addBubble(const APP::Vec2 &pos);
+
 
 private:
     APP::Size mapSize;

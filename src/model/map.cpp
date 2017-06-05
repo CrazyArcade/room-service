@@ -86,4 +86,15 @@ void Map::setTileType(const APP::Vec2 &coord, int type) {
     mapData[coord.y * mapSize.width + coord.x] = type;
 }
 
+void Map::removeTile(const APP::Vec2 &coord) {
+    mapData[coord.y * mapSize.width + coord.x] = TILE_EMPTY;
+}
+
+void Map::addBubble(const APP::Vec2 &pos) {
+    auto coord = positionToTileCoord(pos);
+    setTileType(coord, TILE_BUBBLE);
+}
+
+
+
 

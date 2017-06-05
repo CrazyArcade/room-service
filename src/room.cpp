@@ -33,15 +33,17 @@ std::shared_ptr<Bubble> Room::onPlayerSetBubble(const objectID &playerID) {
         player->boomBubble();
         auto pos = map->getCentreOfPos(player->getPosition());
         auto bubble = Bubble::Factory(playerID, pos, player->getDamage());
+        map->addBubble(pos);
         bubbleList.insert({bubble->getObjectID(), bubble});
         return bubble;
     }
 }
 
 void Room::onBubbleBoom(std::shared_ptr<Bubble> bubble) {
+    map->r
     auto id = bubble->getObjectID();
     auto playerID = bubble->getPlayerID();
-    auto bubblePos = map->positionToTileCoord(bubble->getPosition());
+    auto bubbleCoord = map->positionToTileCoord(bubble->getPosition());
     auto damage = bubble->getDamage();
     // reset current bubble
     playerList[playerID]->boomBubble();
@@ -49,36 +51,36 @@ void Room::onBubbleBoom(std::shared_ptr<Bubble> bubble) {
     const std::vector<APP::Vec2> dirs = {
             APP::Vec2(-1, 0), // left
             APP::Vec2(1, 0), // right
-            APP::Vec2(0, 1), // top
-            APP::Vec2(0, -1), // bottom
+            APP::Vec2(0, -1), // top
+            APP::Vec2(0, 1), // bottom
     };
     bool isEnds[4] = {false, false, false, false};
 
-    auto checkPlayer = [this](const APP::Vec2 &pos) {
+    auto checkPlayer = [this](const APP::Vec2 &coord) {
         for (auto &item : playerList) {
             auto player = item.second;
-            auto playerPos = player->getPosition();
-            if (playerPos == pos) {
+            auto playerCoord = map->positionToTileCoord(player->getPosition());
+            if (playerCoord == coord) {
                 onPlayerStatusChange(player, Player::Status::FREEZE);
             }
         }
     };
-    auto checkBox = [this](const APP::Vec2 &pos, bool &isEnd) {
-        auto item = map->at(pos);
+    auto checkBox = [this](const APP::Vec2 &coord, bool &isEnd) {
+        auto item = map->at(coord);
         if (item == Map::TILE_WALL) {
             isEnd = true;
         } else if (item == Map::TILE_BOX1 || item == Map::TILE_BOX2) {
             // TODO prop
-            map->setTileType(pos, map->TILE_EMPTY);
+            map->removeTile(coord);
         }
     };
-    checkPlayer(bubblePos);
+    checkPlayer(bubbleCoord);
     for (int i = 1; i <= damage; ++i) {
         for (int j = 0; j < 4; ++j) {
             if (isEnds[j]) continue;
-            auto pos = bubblePos + dirs[j] * damage;
-            checkPlayer(pos);
-            checkBox(pos, isEnds[j]);
+            auto coord = bubbleCoord + dirs[j] * damage;
+            checkPlayer(coord);
+            checkBox(coord, isEnds[j]);
         }
     }
     bubbleList.erase(id);
