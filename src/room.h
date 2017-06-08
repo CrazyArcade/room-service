@@ -2,15 +2,12 @@
 #define SERVER_ROOM_H
 
 #include <cstdint>
-#include "src/utils/objectid.h"
-#include "src/utils/log.h"
 #include "src/model/player.h"
 #include "src/model/bubble.h"
 #include "src/model/map.h"
 #include <unordered_map>
 #include <memory>
-
-class Server;
+#include "server.h"
 
 class Room {
 public:
@@ -19,10 +16,6 @@ public:
         INSTANCE.gameStatus = Status::PENDING;
         return &INSTANCE;
     }
-
-    std::shared_ptr<Map> map;
-    std::unordered_map<objectID, std::shared_ptr<Player>> playerList;
-    std::unordered_map<objectID, std::shared_ptr<Bubble>> bubbleList;
 
     enum class Status : uint8_t {
         // wait player coming
@@ -53,11 +46,16 @@ public:
         }
     }
 
-    std::shared_ptr<Player> onPlayerJoin();
+    void setServer(Server *server) {
+        this->server = server;
+        this->init();
+    }
 
-    void onPlayerLeave(const objectID &id);
+    void onPlayerJoin(const WS &ws);
 
-    void onPlayerPosChange(const objectID &id, int x, int y);
+    void onPlayerLeave(const WS &ws);
+
+    void onPlayerPosChange(const WS &ws);
 
     std::shared_ptr<Bubble> onPlayerSetBubble(const objectID &playerID);
 
@@ -67,12 +65,23 @@ public:
 
 private:
     Room() {};
+
+    void init();
+
     Status gameStatus;
 
     int maxPlayer;
     int currentPlayer;
 
+    Server *server;
+    std::shared_ptr<Map> map;
+    std::unordered_map<objectID, std::shared_ptr<Player>> playerList;
+    std::unordered_map<objectID, std::shared_ptr<Bubble>> bubbleList;
+
+    std::shared_ptr<Player> getPlayerByUser(Server::wsuser user);
+
     void onBubbleBoom(std::shared_ptr<Bubble> bubble);
+
 
 };
 

@@ -2,41 +2,50 @@
 #define SERVER_API_H
 
 #include <uWS/uWS.h>
-#include "src/utils/log.h"
-#include "src/utils/utils.h"
 #include "flatbuffers/flatbuffers.h"
 #include "api/api_generated.h"
 #include <string>
 #include <unordered_map>
 #include "src/model/player.h"
-#include "src/utils/objectid.h"
 
-class Room;
+#include <functional>
+
+struct WS {
+    WS(uint8_t *raw, size_t length, const API::Msg *data, uWS::WebSocket<uWS::SERVER> *user)
+            : recv(raw), length(length), data(data), user(user) {};
+
+    uint8_t *recv;
+    size_t length;
+    const API::Msg *data;
+    uWS::WebSocket<uWS::SERVER> *user;
+};
+
+#define CALLBACK(__selector__, __target__) std::bind(&__selector__,__target__, std::placeholders::_1)
 
 class Server {
 public:
-    Server(uWS::Hub *h) : h(h) { this->init(); };
+    Server(uWS::Hub *h) : h(h) {};
     ~Server() = default;
 
     using wsuser = uWS::WebSocket<uWS::SERVER> *;
-    using callback = void (Server::*)(const API::Msg *, uint8_t *, size_t, wsuser);
 
-    void addUser(wsuser user);;
+    using Callback = std::function<void(const WS &)>;
 
-    void delUser(wsuser user);;
+    void onConnection(wsuser user);
 
-    void handle(uint8_t *buf, size_t size, wsuser user) {
-        auto msg = API::GetMsg(buf);
-        auto msgType = msg->data_type();
-        if (funcList.find(msgType) != funcList.end()) {
-            (this->*funcList[msgType])(msg, buf, size, user);
-        }
-    };
+    void onDisconnection(wsuser user);
 
+    void handle(uint8_t *buf, size_t size, wsuser user);
+
+    void on(int code, Callback fn);
+
+    void emit(const flatbuffers::FlatBufferBuilder &builder, wsuser user);
+
+    void emit(const flatbuffers::FlatBufferBuilder &builder);
+
+    void emit(uint8_t *buf, size_t size);
 
 public:
-    // Server
-    void loop();
     void onPlayerConnect(wsuser user);
     void onPlayerPosChange(const API::Msg *msg, uint8_t *raw, size_t size, wsuser = nullptr);
     void onPlayerSetBubble(const API::Msg *msg, uint8_t *raw, size_t size, wsuser = nullptr);
@@ -44,9 +53,6 @@ public:
 
 private:
     uWS::Hub *h;
-    Room *_room;
-
-    void init();
 
     struct EnumClassHash {
         template<typename T>
@@ -55,32 +61,9 @@ private:
         }
     };
 
-    std::unordered_map<API::MsgType, Server::callback, EnumClassHash> funcList;
+    std::unordered_map<int, Server::Callback> funcList;
 
-    inline objectID getObjectIDByUser(Server::wsuser user) {
-        return *static_cast<std::string *>(user->getUserData());
-    }
-
-    inline std::shared_ptr<Player> getPlayerByUser(Server::wsuser user);
-
-
-    void on(API::MsgType code, callback fn) {
-        funcList.insert({code, fn});
-    };
-
-
-    void emit(const flatbuffers::FlatBufferBuilder &builder, wsuser user) {
-        user->send((char *) builder.GetBufferPointer(), builder.GetSize(), uWS::OpCode::BINARY);
-    };
-
-    void emit(const flatbuffers::FlatBufferBuilder &builder) {
-        (*h).getDefaultGroup<uWS::SERVER>().broadcast((char *) builder.GetBufferPointer(), builder.GetSize(),
-                                                      uWS::OpCode::BINARY);
-    };
-
-    void emit(uint8_t *buf, size_t size) {
-        (*h).getDefaultGroup<uWS::SERVER>().broadcast((char *) buf, size, uWS::OpCode::BINARY);
-    };
+    Callback callFunc(int code);
 
 };
 

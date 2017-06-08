@@ -2,6 +2,7 @@
 #define SERVER_PROP_H
 
 #include "entity.h"
+#include <map>
 
 class Prop : public Entity {
 public:
@@ -21,6 +22,12 @@ public:
 private:
     Type type;
 
+    const std::map<Type, int> weights = {
+            {Type::EMPTY,  2},
+            {Type::SPEED,  1},
+            {Type::BUBBLE, 1},
+            {Type::DAMAGE, 1},
+    };
     Type randomType();
 };
 

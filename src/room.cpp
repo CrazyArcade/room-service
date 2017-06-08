@@ -1,28 +1,57 @@
 #include "room.h"
-#include "server.h"
-std::shared_ptr<Player> Room::onPlayerJoin() {
+
+using namespace API;
+
+#define ON(code, funcName) server->on(code, CALLBACK(Room::funcName, this))
+
+void Room::init() {
+    ON(MsgType_PlayerJoin, onPlayerJoin);
+    ON(-1, onPlayerLeave);
+
+    ON(MsgType_PlayerPosChange, onPlayerPosChange);
+    ON(MsgType_PlayerSetBubble, onPlayerJoin);
+
+}
+
+void Room::onPlayerJoin(const WS &ws) {
     if (currentPlayer > 0) {
         auto player = Player::Factory();
         currentPlayer--;
         auto pos = map->getBornPoint();
         player->setPosition(pos);
-        this->playerList.insert({player->getObjectID(), player});
+        auto id = player->getObjectID();
+        this->playerList.insert({id, player});
 
-        return player;
+        ws.user->setUserData(static_cast<void *>(player->getObjectIDPtr()));
+        // send
+        flatbuffers::FlatBufferBuilder builder;
+        auto _id = builder.CreateString(id);
+        auto orc = API::CreatePlayerJoin(builder, _id, pos.x, pos.y, true);
+        auto msg = API::CreateMsg(builder, API::MsgType_PlayerJoin, orc.Union());
+        builder.Finish(msg);
+        server->emit(builder, ws.user);
+
+        LOG_INFO << "player connect, id: " << id.data();
     }
-    return nullptr;
 }
 
-void Room::onPlayerLeave(const objectID &id) {
-    this->playerList.erase(id);
+void Room::onPlayerLeave(const WS &ws) {
+    auto player = getPlayerByUser(ws.user);
+    this->playerList.erase(player->getObjectID());
     currentPlayer++;
 }
 
-void Room::onPlayerPosChange(const objectID &id, int x, int y) {
-    auto player = playerList[id];
+void Room::onPlayerPosChange(const WS &ws) {
+    auto player = getPlayerByUser(ws.user);
     if (!player) return;
     // TODO invalid check
-    player->setPosition(APP::Vec2(x, y));
+
+    auto data = static_cast<const PlayerPosChange *>(ws.data->data());
+    player->setPosition(APP::Vec2(data->x(), data->y()));
+
+    //LOG_DEBUG << "player(" << id << ") move to " << "(" << pos.x << ", " << pos.y << ")";
+
+    server->emit(ws.recv, ws.length);
 }
 
 std::shared_ptr<Bubble> Room::onPlayerSetBubble(const objectID &playerID) {
@@ -40,7 +69,7 @@ std::shared_ptr<Bubble> Room::onPlayerSetBubble(const objectID &playerID) {
 }
 
 void Room::onBubbleBoom(std::shared_ptr<Bubble> bubble) {
-    map->r
+    //map->removeTile()
     auto id = bubble->getObjectID();
     auto playerID = bubble->getPlayerID();
     auto bubbleCoord = map->positionToTileCoord(bubble->getPosition());
@@ -98,4 +127,13 @@ void Room::gameLoop() {
             // TODO
         }
     }
+}
+
+std::shared_ptr<Player> Room::getPlayerByUser(Server::wsuser user) {
+    auto id = static_cast<std::string *>(user->getUserData());
+    if (id) {
+        auto player = playerList.find(*id);
+        if (player != playerList.cend()) return player->second;
+    }
+    return nullptr;
 }

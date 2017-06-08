@@ -9,6 +9,11 @@
 #define MAX(x, y) (((x) < (y)) ? (y) : (x))
 #endif  // MAX
 
+#include "src/utils/objectid.h"
+#include "src/utils/log.h"
+#include "src/utils/utils.h"
+#include <random>
+
 namespace APP {
     struct Size {
         Size(unsigned int height = 0, unsigned int width = 0) : height(height), width(width) {};
@@ -47,6 +52,13 @@ namespace APP {
 
 
     };
+
+    inline int random_num(int max) {
+        std::mt19937 rd;
+        rd.seed(std::random_device()());
+        std::uniform_int_distribution<int> dist(0, max - 1);
+        return dist(rd);
+    }
 }
 
 #endif //SERVER_APP_H

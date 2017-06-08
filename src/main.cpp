@@ -2,16 +2,17 @@
 #include "src/utils/log.h"
 #include "server.h"
 #include "room.h"
-int main() {
 
+int main() {
     uWS::Hub h;
     auto server = new Server(&h);
     auto room = Room::getInstance();
 
     room->setMap("town_10");
+    room->setServer(server);
 
     h.onConnection([&](uWS::WebSocket<uWS::SERVER> *ws, uWS::HttpRequest req) {
-        server->addUser(ws);
+        server->onConnection(ws);
     });
 
     h.onMessage([&server](uWS::WebSocket<uWS::SERVER> *ws, char *message, size_t length, uWS::OpCode opCode) {
@@ -20,7 +21,7 @@ int main() {
     });
 
     h.onDisconnection([&server](uWS::WebSocket<uWS::SERVER> *ws, int code, char *message, size_t length) {
-        server->delUser(ws);
+        server->onDisconnection(ws);
         LOG_INFO << "websocket connection closed: " << code;
     });
 
