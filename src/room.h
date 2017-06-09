@@ -57,9 +57,17 @@ public:
 
     void onPlayerPosChange(const WS &ws);
 
-    std::shared_ptr<Bubble> onPlayerSetBubble(const objectID &playerID);
+    void onPlayerSetBubble(const WS &ws);
 
     void onPlayerStatusChange(std::shared_ptr<Player> player, Player::Status status);
+
+    void onBubbleBoom(std::shared_ptr<Bubble> bubble);
+
+    void onPropSet();
+
+    void onPlayerAttrChange();
+
+    void onGameStatusChange();
 
     void gameLoop();
 
@@ -79,8 +87,6 @@ private:
     std::unordered_map<objectID, std::shared_ptr<Bubble>> bubbleList;
 
     std::shared_ptr<Player> getPlayerByUser(Server::wsuser user);
-
-    void onBubbleBoom(std::shared_ptr<Bubble> bubble);
 
 
 };

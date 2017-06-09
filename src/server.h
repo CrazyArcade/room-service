@@ -11,7 +11,8 @@
 #include <functional>
 
 struct WS {
-    WS(uint8_t *raw, size_t length, const API::Msg *data, uWS::WebSocket<uWS::SERVER> *user)
+    WS(uint8_t *raw = nullptr, size_t length = 0, const API::Msg *data = nullptr,
+       uWS::WebSocket<uWS::SERVER> *user = nullptr)
             : recv(raw), length(length), data(data), user(user) {};
 
     uint8_t *recv;
@@ -25,6 +26,7 @@ struct WS {
 class Server {
 public:
     Server(uWS::Hub *h) : h(h) {};
+
     ~Server() = default;
 
     using wsuser = uWS::WebSocket<uWS::SERVER> *;
@@ -47,7 +49,9 @@ public:
 
 public:
     void onPlayerConnect(wsuser user);
+
     void onPlayerPosChange(const API::Msg *msg, uint8_t *raw, size_t size, wsuser = nullptr);
+
     void onPlayerSetBubble(const API::Msg *msg, uint8_t *raw, size_t size, wsuser = nullptr);
 
 
