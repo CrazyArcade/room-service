@@ -149,6 +149,7 @@ void Room::onPlayerStatusChange(std::shared_ptr<Player> player, Player::Status s
 
 void Room::gameLoop() {
     for (auto &i : bubbleList) {
+        if (i.first.empty()) return;
         auto bubble = i.second;
         if (bubble->isCanBoom()) {
             onBubbleBoom(bubble);
