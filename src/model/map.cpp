@@ -95,6 +95,11 @@ void Map::addBubble(const APP::Vec2 &pos) {
     setTileType(coord, TILE_BUBBLE);
 }
 
+void Map::addProp(const APP::Vec2 &pos, int type) {
+    auto coord = positionToTileCoord(pos);
+    setTileType(coord, type);
+}
+
 
 
 

@@ -11,8 +11,6 @@ void Room::init() {
     ON(MsgType_PlayerPosChange, onPlayerPosChange);
     ON(MsgType_PlayerSetBubble, onPlayerSetBubble);
 
-
-
 }
 
 void Room::onPlayerJoin(const WS &ws) {
@@ -114,9 +112,9 @@ void Room::onBubbleBoom(std::shared_ptr<Bubble> bubble) {
         if (item == Map::TILE_WALL) {
             isEnd = true;
         } else if (item == Map::TILE_BOX1 || item == Map::TILE_BOX2) {
-            // box
             isEnd = true;
             map->removeTile(coord);
+            onPropSet(coord);
         } else if (item >= 100) {
             // prop
             map->removeTile(coord);
@@ -133,9 +131,6 @@ void Room::onBubbleBoom(std::shared_ptr<Bubble> bubble) {
             checkBox(coord, isEnds[j]);
         }
     }
-    bubbleList.erase(id);
-
-    LOG_DEBUG << "bubble use count:" << bubble.use_count();
 
     flatbuffers::FlatBufferBuilder builder;
     auto bid = builder.CreateString(id);
@@ -144,6 +139,8 @@ void Room::onBubbleBoom(std::shared_ptr<Bubble> bubble) {
     builder.Finish(msg);
 
     server->emit(builder);
+
+    LOG_DEBUG << "bubble use count:" << bubble.use_count();
 }
 
 void Room::onPlayerStatusChange(std::shared_ptr<Player> player, Player::Status status) {
@@ -155,6 +152,9 @@ void Room::gameLoop() {
         auto bubble = i.second;
         if (bubble->isCanBoom()) {
             onBubbleBoom(bubble);
+            LOG_DEBUG << bubble.use_count();
+            bubbleList.erase(i.first);
+            LOG_DEBUG << "asa";
             // TODO
         }
     }
@@ -167,4 +167,25 @@ std::shared_ptr<Player> Room::getPlayerByUser(Server::wsuser user) {
         if (player != playerList.cend()) return player->second;
     }
     return nullptr;
+}
+
+void Room::onPropSet(const APP::Vec2 &coord) {
+    auto pos = map->tileCoordToPosition(coord);
+    auto prop = Prop::Factory(pos);
+    auto type = prop->getType();
+    if (prop->getType() == 0) return;
+
+    map->addProp(pos, type);
+
+    auto id = prop->getObjectID();
+    propList.insert({id, prop});
+    flatbuffers::FlatBufferBuilder builder;
+    auto pid = builder.CreateString(id);
+    auto orc = CreatePropSet(builder, pid, pos.x, pos.y, static_cast<PropType>(type));
+    auto msg = CreateMsg(builder, MsgType_PropSet, orc.Union());
+    builder.Finish(msg);
+
+    server->emit(builder);
+
+    LOG_DEBUG << "prop set at" << pos.x << ", " << pos.y << "type: " << type;
 }

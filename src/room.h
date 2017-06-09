@@ -1,13 +1,16 @@
 #ifndef SERVER_ROOM_H
 #define SERVER_ROOM_H
 
-#include <cstdint>
+
 #include "src/model/player.h"
 #include "src/model/bubble.h"
+#include "src/model/prop.h"
 #include "src/model/map.h"
+#include "server.h"
+#include <cstdint>
 #include <unordered_map>
 #include <memory>
-#include "server.h"
+
 
 class Room {
 public:
@@ -63,7 +66,7 @@ public:
 
     void onBubbleBoom(std::shared_ptr<Bubble> bubble);
 
-    void onPropSet();
+    void onPropSet(const APP::Vec2 &coord);
 
     void onPlayerAttrChange();
 
@@ -85,6 +88,7 @@ private:
     std::shared_ptr<Map> map;
     std::unordered_map<objectID, std::shared_ptr<Player>> playerList;
     std::unordered_map<objectID, std::shared_ptr<Bubble>> bubbleList;
+    std::unordered_map<objectID, std::shared_ptr<Prop>> propList;
 
     std::shared_ptr<Player> getPlayerByUser(Server::wsuser user);
 

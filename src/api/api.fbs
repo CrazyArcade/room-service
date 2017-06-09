@@ -5,7 +5,10 @@ enum Direction:byte {
 }
 
 enum PropType:byte {
-    SPEED_UP, DAMAGE_UP, BUBBLE_UP
+    NONE = 0,
+    SPEED_UP = 100,
+    BUBBLE_UP,
+    DAMAGE_UP
 }
 
 enum PlayerStatus:byte {

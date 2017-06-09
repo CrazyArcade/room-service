@@ -41,6 +41,8 @@ public:
 
     void addBubble(const APP::Vec2 &pos);
 
+    void addProp(const APP::Vec2 &pos, int type);
+
 
 private:
     APP::Size mapSize;
