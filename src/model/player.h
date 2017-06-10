@@ -20,7 +20,7 @@ public:
     Player(std::uint8_t speed, std::uint8_t damage, std::uint8_t maxBubble);
     ~Player() = default;
 
-    static std::shared_ptr<Player> Factory(std::uint8_t speed = 2, std::uint8_t damage = 1, std::uint8_t bubble = 1);
+    static std::shared_ptr<Player> Factory(std::uint8_t speed = 2, std::uint8_t damage = 2, std::uint8_t bubble = 1);
 
     enum class Direction : std::uint8_t {
         LEFT,
@@ -38,7 +38,7 @@ public:
     enum class Status : std::uint8_t {
         // player can move
         FREE,
-        // player can;t move
+        // player can't move
                 FREEZE,
         // die
                 DIE
@@ -53,7 +53,6 @@ public:
     void setDirection(Direction k);
     void removeDirection(Direction k);
     Direction currentDirection();
-    void update();
 
     uint8_t getDamage();
 
@@ -61,14 +60,14 @@ public:
     void setBubble();
     void boomBubble();
 
-    void move();
+    void setAttr(int type);
+
+    const Attr &getAttr() const;
 private:
     std::string _name;
     std::time_t directions[4] = {0};
     Status status;
     Attr attr;
-
-    std::pair<APP::Vec2, APP::Vec2> nextPosition(Direction d);
 
 };
 

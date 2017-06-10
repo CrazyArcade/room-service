@@ -100,6 +100,11 @@ void Map::addProp(const APP::Vec2 &pos, int type) {
     setTileType(coord, type);
 }
 
+bool Map::isCanAccess(const APP::Vec2 &pos) {
+    auto tile = at(positionToTileCoord(pos));
+    return (tile == TILE_EMPTY || tile >= 100);
+}
+
 
 
 

@@ -46,15 +46,6 @@ public:
     void emit(const flatbuffers::FlatBufferBuilder &builder);
 
     void emit(uint8_t *buf, size_t size);
-
-public:
-    void onPlayerConnect(wsuser user);
-
-    void onPlayerPosChange(const API::Msg *msg, uint8_t *raw, size_t size, wsuser = nullptr);
-
-    void onPlayerSetBubble(const API::Msg *msg, uint8_t *raw, size_t size, wsuser = nullptr);
-
-
 private:
     uWS::Hub *h;
 

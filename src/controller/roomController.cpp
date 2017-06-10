@@ -28,9 +28,6 @@ void RoomController::deletePlayerByObjectID(objectID id) {
 }
 
 void RoomController::updatePlayer() {
-    for (auto &player : playerList) {
-        player.second->update();
-    }
 }
 
 void RoomController::update() {

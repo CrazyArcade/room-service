@@ -1,5 +1,5 @@
 #include "player.h"
-#include "src/utils/log.h"
+#include "prop.h"
 
 Player::Player(std::uint8_t speed, std::uint8_t damage, std::uint8_t bubble) {
     attr.speed = speed;
@@ -41,10 +41,6 @@ objectID *Player::getObjectIDPtr() {
     return &(this->_id);
 }
 
-void Player::update() {
-    //move();
-}
-
 void Player::setName(const std::string name) {
     this->_name = name;
 }
@@ -57,52 +53,6 @@ std::shared_ptr<Player> Player::Factory(uint8_t speed, uint8_t damage, uint8_t b
     return std::make_shared<Player>(speed, damage, bubble);
 }
 
-void Player::move() {
-//    if (status == Status::FREE) {
-//        Direction d = currentDirection();
-//        auto map = MapController::getInstance()->getMap();
-//        auto pair = nextPosition(d);
-//        // center point
-//        auto nextPos = pair.first;
-//        // edge point
-//        auto logicPos = pair.second;
-//
-//        auto coordPos = map->positionToTileCoord(logicPos);
-////        LOG_DEBUG << "current pos: " << pos.x << ", " << pos.y
-////                  << "  next pos: " << nextPos.x << ", " << nextPos.y;
-//        if (map->isCanMove(coordPos)) {
-//            pos = nextPos;
-//        }
-//    }
-}
-
-std::pair<APP::Vec2, APP::Vec2> Player::nextPosition(Player::Direction d) {
-    auto pos = getPosition();
-    APP::Vec2 nextPos(pos.x, pos.y), logicPos;
-
-    switch (d) {
-        case Direction::LEFT:
-            nextPos.x -= attr.speed;
-            logicPos.x = nextPos.x - WIDTH / 2;
-            break;
-        case Direction::RIGHT:
-            nextPos.x += attr.speed;
-            logicPos.x = nextPos.x + WIDTH / 2;
-            break;
-        case Direction::UP :
-            nextPos.y += attr.speed;
-            logicPos.y = nextPos.y + HEIGHT / 2;
-            break;
-        case Direction::DOWN:
-            nextPos.y -= attr.speed;
-            logicPos.y = nextPos.y - HEIGHT / 2;
-            break;
-        default:
-            break;
-    }
-    return std::make_pair(nextPos, logicPos);
-
-}
 
 bool Player::isCanSetBubble() {
     return attr.currentBubble > 0;
@@ -122,6 +72,33 @@ void Player::setBubble() {
 
 uint8_t Player::getDamage() {
     return attr.damage;
+}
+
+void Player::setAttr(int type) {
+    switch (static_cast<Prop::Type>(type)) {
+        case Prop::Type::BUBBLE :
+            if (attr.maxBubble < 7) {
+                attr.currentBubble++;
+                attr.maxBubble++;
+            }
+            return;
+        case Prop::Type::SPEED :
+            if (attr.speed < 7) {
+                attr.speed++;
+            }
+            return;
+        case Prop::Type::DAMAGE:
+            if (attr.damage < 7) {
+                attr.damage++;
+            }
+            return;
+        default:
+            return;
+    }
+}
+
+const Attr &Player::getAttr() const {
+    return attr;
 }
 
 

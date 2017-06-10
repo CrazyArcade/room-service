@@ -68,9 +68,11 @@ table PlayerEatProp {
 
 // sender
 table PlayerAttrChange {
+    id:string;
     speed:ubyte;
     damage:ubyte;
     maxBubble:ubyte;
+    currentBubble:ubyte;
 }
 
 // sender

@@ -47,10 +47,27 @@ void Room::onPlayerPosChange(const WS &ws) {
     // TODO invalid check
 
     auto data = static_cast<const PlayerPosChange *>(ws.data->data());
-    player->setPosition(APP::Vec2(data->x(), data->y()));
+    //auto prevPos = player->getPosition();
+    auto nextPos = APP::Vec2(data->x(), data->y());
+    auto nextCoord = map->positionToTileCoord(nextPos);
+
+    auto type = map->at(nextCoord);
+
+    if (!map->isCanAccess(nextPos)) {
+        //LOG_DEBUG << nextCoord.x << ", " << nextCoord.y;
+        // TODO emit user
+        return;
+    }
+
+    if (type >= 100) {
+        onPlayerAttrChange(player, type);
+        map->removeTile(nextCoord);
+    }
 
     //LOG_DEBUG << "player(" << id << ") move to " << "(" << pos.x << ", " << pos.y << ")";
 
+
+    player->setPosition(nextPos);
     server->emit(ws.recv, ws.length);
 }
 
@@ -95,6 +112,8 @@ void Room::onBubbleBoom(std::shared_ptr<Bubble> bubble) {
             APP::Vec2(0, 1), // bottom
     };
 
+    std::vector<APP::Vec2> boomedTile;
+
     bool isEnds[4] = {false, false, false, false};
 
     auto checkPlayer = [this](const APP::Vec2 &coord) {
@@ -106,7 +125,11 @@ void Room::onBubbleBoom(std::shared_ptr<Bubble> bubble) {
             }
         }
     };
-    auto checkBox = [this](const APP::Vec2 &coord, bool &isEnd) {
+    auto checkBox = [this, &boomedTile](const APP::Vec2 &coord, bool &isEnd) {
+        if (!map->isInMap(coord)) {
+            isEnd = true;
+            return;
+        }
         auto item = map->at(coord);
 
         if (item == Map::TILE_WALL) {
@@ -114,7 +137,7 @@ void Room::onBubbleBoom(std::shared_ptr<Bubble> bubble) {
         } else if (item == Map::TILE_BOX1 || item == Map::TILE_BOX2) {
             isEnd = true;
             map->removeTile(coord);
-            onPropSet(coord);
+            boomedTile.push_back(coord);
         } else if (item >= 100) {
             // prop
             map->removeTile(coord);
@@ -122,13 +145,14 @@ void Room::onBubbleBoom(std::shared_ptr<Bubble> bubble) {
     };
 
     checkPlayer(bubbleCoord);
-
+    map->removeTile(bubbleCoord);
     for (int i = 1; i <= damage; ++i) {
         for (int j = 0; j < 4; ++j) {
             if (isEnds[j]) continue;
-            auto coord = bubbleCoord + dirs[j] * damage;
+            auto coord = bubbleCoord + dirs[j] * i;
             checkPlayer(coord);
             checkBox(coord, isEnds[j]);
+            //LOG_DEBUG << i << "," << j << "," << isEnds[j];
         }
     }
 
@@ -140,7 +164,9 @@ void Room::onBubbleBoom(std::shared_ptr<Bubble> bubble) {
 
     server->emit(builder);
 
-    LOG_DEBUG << "bubble use count:" << bubble.use_count();
+    for (auto &item : boomedTile) {
+        onPropSet(item);
+    }
 }
 
 void Room::onPlayerStatusChange(std::shared_ptr<Player> player, Player::Status status) {
@@ -148,15 +174,15 @@ void Room::onPlayerStatusChange(std::shared_ptr<Player> player, Player::Status s
 }
 
 void Room::gameLoop() {
-    for (auto &i : bubbleList) {
-        if (i.first.empty()) return;
-        auto bubble = i.second;
+    // safely erase
+    for (auto it = bubbleList.begin(); it != bubbleList.end();) {
+        if (it->first.empty()) continue;
+        auto bubble = it->second;
         if (bubble->isCanBoom()) {
             onBubbleBoom(bubble);
-            LOG_DEBUG << bubble.use_count();
-            bubbleList.erase(i.first);
-            LOG_DEBUG << "asa";
-            // TODO
+            bubbleList.erase(it++);
+        } else {
+            ++it;
         }
     }
 }
@@ -188,5 +214,23 @@ void Room::onPropSet(const APP::Vec2 &coord) {
 
     server->emit(builder);
 
-    LOG_DEBUG << "prop set at" << pos.x << ", " << pos.y << "type: " << type;
+    LOG_INFO << "prop set at (" << pos.x << ", " << pos.y << "), type: " << type;
+}
+
+void Room::onPlayerAttrChange(std::shared_ptr<Player> player, int type) {
+    player->setAttr(type);
+    auto attr = player->getAttr();
+
+    LOG_INFO << "[player " << player->getObjectID() << " attr update]"
+             << "max bubble: " << (int) attr.maxBubble
+             << ", speed: " << (int) attr.speed
+             << ", damage: " << (int) attr.damage;
+
+    flatbuffers::FlatBufferBuilder builder;
+    auto id = builder.CreateString(player->getObjectID());
+    auto orc = CreatePlayerAttrChange(builder, id, attr.speed, attr.damage, attr.maxBubble, attr.currentBubble);
+    auto msg = CreateMsg(builder, MsgType_PlayerAttrChange, orc.Union());
+    builder.Finish(msg);
+
+    server->emit(builder);
 }

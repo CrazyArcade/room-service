@@ -21,7 +21,7 @@ public:
 
     Map(const std::string &name);
 
-    inline bool isInMap(const APP::Vec2 &coord);
+    bool isInMap(const APP::Vec2 &coord);
 
     int at(const APP::Vec2 &coord);
 
@@ -37,11 +37,14 @@ public:
 
     void setTileType(const APP::Vec2 &coord, int type);
 
+    // set tile empty
     void removeTile(const APP::Vec2 &coord);
 
     void addBubble(const APP::Vec2 &pos);
 
     void addProp(const APP::Vec2 &pos, int type);
+
+    bool isCanAccess(const APP::Vec2 &pos);
 
 
 private:

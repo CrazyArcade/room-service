@@ -64,11 +64,11 @@ public:
 
     void onPlayerStatusChange(std::shared_ptr<Player> player, Player::Status status);
 
+    void onPlayerAttrChange(std::shared_ptr<Player> player, int propType);
+
     void onBubbleBoom(std::shared_ptr<Bubble> bubble);
 
     void onPropSet(const APP::Vec2 &coord);
-
-    void onPlayerAttrChange();
 
     void onGameStatusChange();
 
