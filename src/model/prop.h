@@ -23,10 +23,10 @@ private:
     Type type;
 
     const std::map<Type, int> weights = {
-            {Type::EMPTY,  2},
+            {Type::EMPTY,  6},
             {Type::SPEED,  1},
-            {Type::BUBBLE, 1},
-            {Type::DAMAGE, 1},
+            {Type::BUBBLE, 2},
+            {Type::DAMAGE, 2},
     };
     Type randomType();
 };

@@ -75,9 +75,11 @@ void Room::onPlayerSetBubble(const WS &ws) {
     auto player = getPlayerByUser(ws.user);
     if (!player) return;
     if (!player->isCanSetBubble()) return;
+    auto playerPos = player->getPosition();
+    if (map->TILE_BUBBLE == map->at(map->positionToTileCoord(playerPos))) return;
     player->setBubble();
     auto playerID = player->getObjectID();
-    auto pos = map->getCentreOfPos(player->getPosition());
+    auto pos = map->getCentreOfPos(playerPos);
     auto damage = player->getDamage();
     LOG_INFO << "player(" << playerID << ") set bubble at" << "(" << pos.x << ", " << pos.y << ")";
 

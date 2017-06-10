@@ -20,7 +20,7 @@ public:
     Player(std::uint8_t speed, std::uint8_t damage, std::uint8_t maxBubble);
     ~Player() = default;
 
-    static std::shared_ptr<Player> Factory(std::uint8_t speed = 2, std::uint8_t damage = 2, std::uint8_t bubble = 1);
+    static std::shared_ptr<Player> Factory(std::uint8_t speed = 2, std::uint8_t damage = 1, std::uint8_t bubble = 1);
 
     enum class Direction : std::uint8_t {
         LEFT,
