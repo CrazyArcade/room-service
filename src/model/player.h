@@ -60,6 +60,8 @@ public:
     void setBubble();
     void boomBubble();
 
+    bool isDie();
+
     void setAttr(int type);
 
     const Attr &getAttr() const;
@@ -68,6 +70,8 @@ private:
     std::time_t directions[4] = {0};
     Status status;
     Attr attr;
+
+    time_t dieAt;
 
 };
 

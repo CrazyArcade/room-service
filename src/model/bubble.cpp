@@ -9,7 +9,7 @@ void Bubble::boom() {
 }
 
 bool Bubble::isCanBoom() {
-    return time(nullptr) > boomAt;
+    return time(nullptr) >= boomAt;
 }
 
 uint8_t Bubble::getDamage() {

@@ -14,6 +14,9 @@ Player::Status Player::getStatus() const {
 
 void Player::setStatus(Player::Status status) {
     this->status = status;
+    if (status == Status::FREEZE) {
+        dieAt = time(nullptr) + 3;
+    }
 }
 
 void Player::setDirection(Player::Direction d) {
@@ -55,7 +58,7 @@ std::shared_ptr<Player> Player::Factory(uint8_t speed, uint8_t damage, uint8_t b
 
 
 bool Player::isCanSetBubble() {
-    return attr.currentBubble > 0;
+    return status == Status::FREE && attr.currentBubble > 0;
 }
 
 void Player::boomBubble() {
@@ -99,6 +102,16 @@ void Player::setAttr(int type) {
 
 const Attr &Player::getAttr() const {
     return attr;
+}
+
+bool Player::isDie() {
+    if (status == Status::FREE)
+        return false;
+
+    if (status == Status::DIE)
+        return true;
+
+    return time(nullptr) >= dieAt;
 }
 
 

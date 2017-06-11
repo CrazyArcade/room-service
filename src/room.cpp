@@ -53,7 +53,7 @@ void Room::onPlayerPosChange(const WS &ws) {
 
     auto type = map->at(nextCoord);
 
-    if (!map->isCanAccess(nextPos)) {
+    if (!map->isCanAccess(nextPos) || player->getStatus() != Player::Status::FREE) {
         //LOG_DEBUG << nextCoord.x << ", " << nextCoord.y;
         // TODO emit user
         return;
@@ -172,13 +172,24 @@ void Room::onBubbleBoom(std::shared_ptr<Bubble> bubble) {
 }
 
 void Room::onPlayerStatusChange(std::shared_ptr<Player> player, Player::Status status) {
-    // TODO
+    player->setStatus(status);
+
+    flatbuffers::FlatBufferBuilder builder;
+    auto id = builder.CreateString(player->getObjectID());
+    auto orc = CreatePlayerStatusChange(builder, id, static_cast<PlayerStatus>(status));
+    auto msg = CreateMsg(builder, MsgType_PlayerStatusChange, orc.Union());
+    builder.Finish(msg);
+
+    server->emit(builder);
 }
 
 void Room::gameLoop() {
     // safely erase
     for (auto it = bubbleList.begin(); it != bubbleList.end();) {
-        if (it->first.empty()) continue;
+        if (it->first.empty()) {
+            ++it;
+            continue;
+        };
         auto bubble = it->second;
         if (bubble->isCanBoom()) {
             onBubbleBoom(bubble);
@@ -186,6 +197,20 @@ void Room::gameLoop() {
         } else {
             ++it;
         }
+    }
+
+    for (auto it = playerList.begin(); it != playerList.end();) {
+        if (it->first.empty()) {
+            ++it;
+            continue;
+        };
+        auto player = it->second;
+        if (player->getStatus() == Player::Status::FREEZE) {
+            if (player->isDie()) {
+                onPlayerStatusChange(player, Player::Status::DIE);
+            }
+        }
+        ++it;
     }
 }
 
