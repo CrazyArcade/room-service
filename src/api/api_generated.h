@@ -7,6 +7,20 @@
 
 namespace API {
 
+    struct UserData;
+
+    struct Welcome;
+
+    struct GotIt;
+
+    struct JoinRoom;
+
+    struct SomeoneJoinRoom;
+
+    struct UserChangeRole;
+
+    struct UserChangeStats;
+
     struct PlayerJoin;
 
     struct PlayerPosChange;
@@ -28,6 +42,125 @@ namespace API {
     struct GameStatusChange;
 
     struct Msg;
+
+    enum MsgType {
+        MsgType_NONE = 0,
+        MsgType_Welcome = 1,
+        MsgType_GotIt = 2,
+        MsgType_JoinRoom = 3,
+        MsgType_SomeoneJoinRoom = 4,
+        MsgType_UserChangeRole = 5,
+        MsgType_UserChangeStats = 6,
+        MsgType_PlayerJoin = 7,
+        MsgType_PlayerPosChange = 8,
+        MsgType_PlayerSetBubble = 9,
+        MsgType_BubbleSet = 10,
+        MsgType_BubbleBoom = 11,
+        MsgType_PropSet = 12,
+        MsgType_PlayerEatProp = 13,
+        MsgType_PlayerAttrChange = 14,
+        MsgType_PlayerStatusChange = 15,
+        MsgType_GameStatusChange = 16,
+        MsgType_MIN = MsgType_NONE,
+        MsgType_MAX = MsgType_GameStatusChange
+    };
+
+    inline const char **EnumNamesMsgType() {
+        static const char *names[] = {"NONE", "Welcome", "GotIt", "JoinRoom", "SomeoneJoinRoom", "UserChangeRole",
+                                      "UserChangeStats", "PlayerJoin", "PlayerPosChange", "PlayerSetBubble",
+                                      "BubbleSet", "BubbleBoom", "PropSet", "PlayerEatProp", "PlayerAttrChange",
+                                      "PlayerStatusChange", "GameStatusChange", nullptr};
+        return names;
+    }
+
+    inline const char *EnumNameMsgType(MsgType e) { return EnumNamesMsgType()[static_cast<int>(e)]; }
+
+    template<typename T>
+    struct MsgTypeTraits {
+        static const MsgType enum_value = MsgType_NONE;
+    };
+
+    template<>
+    struct MsgTypeTraits<Welcome> {
+        static const MsgType enum_value = MsgType_Welcome;
+    };
+
+    template<>
+    struct MsgTypeTraits<GotIt> {
+        static const MsgType enum_value = MsgType_GotIt;
+    };
+
+    template<>
+    struct MsgTypeTraits<JoinRoom> {
+        static const MsgType enum_value = MsgType_JoinRoom;
+    };
+
+    template<>
+    struct MsgTypeTraits<SomeoneJoinRoom> {
+        static const MsgType enum_value = MsgType_SomeoneJoinRoom;
+    };
+
+    template<>
+    struct MsgTypeTraits<UserChangeRole> {
+        static const MsgType enum_value = MsgType_UserChangeRole;
+    };
+
+    template<>
+    struct MsgTypeTraits<UserChangeStats> {
+        static const MsgType enum_value = MsgType_UserChangeStats;
+    };
+
+    template<>
+    struct MsgTypeTraits<PlayerJoin> {
+        static const MsgType enum_value = MsgType_PlayerJoin;
+    };
+
+    template<>
+    struct MsgTypeTraits<PlayerPosChange> {
+        static const MsgType enum_value = MsgType_PlayerPosChange;
+    };
+
+    template<>
+    struct MsgTypeTraits<PlayerSetBubble> {
+        static const MsgType enum_value = MsgType_PlayerSetBubble;
+    };
+
+    template<>
+    struct MsgTypeTraits<BubbleSet> {
+        static const MsgType enum_value = MsgType_BubbleSet;
+    };
+
+    template<>
+    struct MsgTypeTraits<BubbleBoom> {
+        static const MsgType enum_value = MsgType_BubbleBoom;
+    };
+
+    template<>
+    struct MsgTypeTraits<PropSet> {
+        static const MsgType enum_value = MsgType_PropSet;
+    };
+
+    template<>
+    struct MsgTypeTraits<PlayerEatProp> {
+        static const MsgType enum_value = MsgType_PlayerEatProp;
+    };
+
+    template<>
+    struct MsgTypeTraits<PlayerAttrChange> {
+        static const MsgType enum_value = MsgType_PlayerAttrChange;
+    };
+
+    template<>
+    struct MsgTypeTraits<PlayerStatusChange> {
+        static const MsgType enum_value = MsgType_PlayerStatusChange;
+    };
+
+    template<>
+    struct MsgTypeTraits<GameStatusChange> {
+        static const MsgType enum_value = MsgType_GameStatusChange;
+    };
+
+    inline bool VerifyMsgType(flatbuffers::Verifier &verifier, const void *union_obj, MsgType type);
 
     enum Direction {
         Direction_LEFT = 0,
@@ -86,87 +219,330 @@ namespace API {
 
     inline const char *EnumNameGameStatus(GameStatus e) { return EnumNamesGameStatus()[static_cast<int>(e)]; }
 
-    enum MsgType {
-        MsgType_NONE = 0,
-        MsgType_PlayerJoin = 1,
-        MsgType_PlayerPosChange = 2,
-        MsgType_PlayerSetBubble = 3,
-        MsgType_BubbleSet = 4,
-        MsgType_BubbleBoom = 5,
-        MsgType_PropSet = 6,
-        MsgType_PlayerEatProp = 7,
-        MsgType_PlayerAttrChange = 8,
-        MsgType_PlayerStatusChange = 9,
-        MsgType_GameStatusChange = 10,
-        MsgType_MIN = MsgType_NONE,
-        MsgType_MAX = MsgType_GameStatusChange
+    struct UserData FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
+        enum {
+            VT_UID = 4,
+            VT_NAME = 6,
+            VT_ROLE = 8
+        };
+
+        const flatbuffers::String *uid() const { return GetPointer<const flatbuffers::String *>(VT_UID); }
+
+        const flatbuffers::String *name() const { return GetPointer<const flatbuffers::String *>(VT_NAME); }
+
+        int32_t role() const { return GetField<int32_t>(VT_ROLE, 0); }
+
+        bool Verify(flatbuffers::Verifier &verifier) const {
+            return VerifyTableStart(verifier) &&
+                   VerifyField<flatbuffers::uoffset_t>(verifier, VT_UID) &&
+                   verifier.Verify(uid()) &&
+                   VerifyField<flatbuffers::uoffset_t>(verifier, VT_NAME) &&
+                   verifier.Verify(name()) &&
+                   VerifyField<int32_t>(verifier, VT_ROLE) &&
+                   verifier.EndTable();
+        }
     };
 
-    inline const char **EnumNamesMsgType() {
-        static const char *names[] = {"NONE", "PlayerJoin", "PlayerPosChange", "PlayerSetBubble", "BubbleSet",
-                                      "BubbleBoom", "PropSet", "PlayerEatProp", "PlayerAttrChange",
-                                      "PlayerStatusChange", "GameStatusChange", nullptr};
-        return names;
+    struct UserDataBuilder {
+        flatbuffers::FlatBufferBuilder &fbb_;
+        flatbuffers::uoffset_t start_;
+
+        void add_uid(flatbuffers::Offset<flatbuffers::String> uid) { fbb_.AddOffset(UserData::VT_UID, uid); }
+
+        void add_name(flatbuffers::Offset<flatbuffers::String> name) { fbb_.AddOffset(UserData::VT_NAME, name); }
+
+        void add_role(int32_t role) { fbb_.AddElement<int32_t>(UserData::VT_ROLE, role, 0); }
+
+        UserDataBuilder(flatbuffers::FlatBufferBuilder &_fbb) : fbb_(_fbb) { start_ = fbb_.StartTable(); }
+
+        UserDataBuilder &operator=(const UserDataBuilder &);
+
+        flatbuffers::Offset<UserData> Finish() {
+            auto o = flatbuffers::Offset<UserData>(fbb_.EndTable(start_, 3));
+            return o;
+        }
+    };
+
+    inline flatbuffers::Offset<UserData> CreateUserData(flatbuffers::FlatBufferBuilder &_fbb,
+                                                        flatbuffers::Offset<flatbuffers::String> uid = 0,
+                                                        flatbuffers::Offset<flatbuffers::String> name = 0,
+                                                        int32_t role = 0) {
+        UserDataBuilder builder_(_fbb);
+        builder_.add_role(role);
+        builder_.add_name(name);
+        builder_.add_uid(uid);
+        return builder_.Finish();
     }
 
-    inline const char *EnumNameMsgType(MsgType e) { return EnumNamesMsgType()[static_cast<int>(e)]; }
+    inline flatbuffers::Offset<UserData> CreateUserDataDirect(flatbuffers::FlatBufferBuilder &_fbb,
+                                                              const char *uid = nullptr,
+                                                              const char *name = nullptr,
+                                                              int32_t role = 0) {
+        return CreateUserData(_fbb, uid ? _fbb.CreateString(uid) : 0, name ? _fbb.CreateString(name) : 0, role);
+    }
 
-    template<typename T>
-    struct MsgTypeTraits {
-        static const MsgType enum_value = MsgType_NONE;
+    struct Welcome FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
+        enum {
+            VT_UID = 4
+        };
+
+        const flatbuffers::String *uid() const { return GetPointer<const flatbuffers::String *>(VT_UID); }
+
+        bool Verify(flatbuffers::Verifier &verifier) const {
+            return VerifyTableStart(verifier) &&
+                   VerifyField<flatbuffers::uoffset_t>(verifier, VT_UID) &&
+                   verifier.Verify(uid()) &&
+                   verifier.EndTable();
+        }
     };
 
-    template<>
-    struct MsgTypeTraits<PlayerJoin> {
-        static const MsgType enum_value = MsgType_PlayerJoin;
+    struct WelcomeBuilder {
+        flatbuffers::FlatBufferBuilder &fbb_;
+        flatbuffers::uoffset_t start_;
+
+        void add_uid(flatbuffers::Offset<flatbuffers::String> uid) { fbb_.AddOffset(Welcome::VT_UID, uid); }
+
+        WelcomeBuilder(flatbuffers::FlatBufferBuilder &_fbb) : fbb_(_fbb) { start_ = fbb_.StartTable(); }
+
+        WelcomeBuilder &operator=(const WelcomeBuilder &);
+
+        flatbuffers::Offset<Welcome> Finish() {
+            auto o = flatbuffers::Offset<Welcome>(fbb_.EndTable(start_, 1));
+            return o;
+        }
     };
 
-    template<>
-    struct MsgTypeTraits<PlayerPosChange> {
-        static const MsgType enum_value = MsgType_PlayerPosChange;
+    inline flatbuffers::Offset<Welcome> CreateWelcome(flatbuffers::FlatBufferBuilder &_fbb,
+                                                      flatbuffers::Offset<flatbuffers::String> uid = 0) {
+        WelcomeBuilder builder_(_fbb);
+        builder_.add_uid(uid);
+        return builder_.Finish();
+    }
+
+    inline flatbuffers::Offset<Welcome> CreateWelcomeDirect(flatbuffers::FlatBufferBuilder &_fbb,
+                                                            const char *uid = nullptr) {
+        return CreateWelcome(_fbb, uid ? _fbb.CreateString(uid) : 0);
+    }
+
+    struct GotIt FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
+        enum {
+            VT_NAME = 4
+        };
+
+        const flatbuffers::String *name() const { return GetPointer<const flatbuffers::String *>(VT_NAME); }
+
+        bool Verify(flatbuffers::Verifier &verifier) const {
+            return VerifyTableStart(verifier) &&
+                   VerifyField<flatbuffers::uoffset_t>(verifier, VT_NAME) &&
+                   verifier.Verify(name()) &&
+                   verifier.EndTable();
+        }
     };
 
-    template<>
-    struct MsgTypeTraits<PlayerSetBubble> {
-        static const MsgType enum_value = MsgType_PlayerSetBubble;
+    struct GotItBuilder {
+        flatbuffers::FlatBufferBuilder &fbb_;
+        flatbuffers::uoffset_t start_;
+
+        void add_name(flatbuffers::Offset<flatbuffers::String> name) { fbb_.AddOffset(GotIt::VT_NAME, name); }
+
+        GotItBuilder(flatbuffers::FlatBufferBuilder &_fbb) : fbb_(_fbb) { start_ = fbb_.StartTable(); }
+
+        GotItBuilder &operator=(const GotItBuilder &);
+
+        flatbuffers::Offset<GotIt> Finish() {
+            auto o = flatbuffers::Offset<GotIt>(fbb_.EndTable(start_, 1));
+            return o;
+        }
     };
 
-    template<>
-    struct MsgTypeTraits<BubbleSet> {
-        static const MsgType enum_value = MsgType_BubbleSet;
+    inline flatbuffers::Offset<GotIt> CreateGotIt(flatbuffers::FlatBufferBuilder &_fbb,
+                                                  flatbuffers::Offset<flatbuffers::String> name = 0) {
+        GotItBuilder builder_(_fbb);
+        builder_.add_name(name);
+        return builder_.Finish();
+    }
+
+    inline flatbuffers::Offset<GotIt> CreateGotItDirect(flatbuffers::FlatBufferBuilder &_fbb,
+                                                        const char *name = nullptr) {
+        return CreateGotIt(_fbb, name ? _fbb.CreateString(name) : 0);
+    }
+
+    struct JoinRoom FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
+        bool Verify(flatbuffers::Verifier &verifier) const {
+            return VerifyTableStart(verifier) &&
+                   verifier.EndTable();
+        }
     };
 
-    template<>
-    struct MsgTypeTraits<BubbleBoom> {
-        static const MsgType enum_value = MsgType_BubbleBoom;
+    struct JoinRoomBuilder {
+        flatbuffers::FlatBufferBuilder &fbb_;
+        flatbuffers::uoffset_t start_;
+
+        JoinRoomBuilder(flatbuffers::FlatBufferBuilder &_fbb) : fbb_(_fbb) { start_ = fbb_.StartTable(); }
+
+        JoinRoomBuilder &operator=(const JoinRoomBuilder &);
+
+        flatbuffers::Offset<JoinRoom> Finish() {
+            auto o = flatbuffers::Offset<JoinRoom>(fbb_.EndTable(start_, 0));
+            return o;
+        }
     };
 
-    template<>
-    struct MsgTypeTraits<PropSet> {
-        static const MsgType enum_value = MsgType_PropSet;
+    inline flatbuffers::Offset<JoinRoom> CreateJoinRoom(flatbuffers::FlatBufferBuilder &_fbb) {
+        JoinRoomBuilder builder_(_fbb);
+        return builder_.Finish();
+    }
+
+    struct SomeoneJoinRoom FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
+        enum {
+            VT_USERS = 4
+        };
+
+        const flatbuffers::Vector<flatbuffers::Offset<UserData>> *
+        users() const { return GetPointer<const flatbuffers::Vector<flatbuffers::Offset<UserData>> *>(VT_USERS); }
+
+        bool Verify(flatbuffers::Verifier &verifier) const {
+            return VerifyTableStart(verifier) &&
+                   VerifyField<flatbuffers::uoffset_t>(verifier, VT_USERS) &&
+                   verifier.Verify(users()) &&
+                   verifier.VerifyVectorOfTables(users()) &&
+                   verifier.EndTable();
+        }
     };
 
-    template<>
-    struct MsgTypeTraits<PlayerEatProp> {
-        static const MsgType enum_value = MsgType_PlayerEatProp;
+    struct SomeoneJoinRoomBuilder {
+        flatbuffers::FlatBufferBuilder &fbb_;
+        flatbuffers::uoffset_t start_;
+
+        void add_users(flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<UserData>>> users) {
+            fbb_.AddOffset(SomeoneJoinRoom::VT_USERS, users);
+        }
+
+        SomeoneJoinRoomBuilder(flatbuffers::FlatBufferBuilder &_fbb) : fbb_(_fbb) { start_ = fbb_.StartTable(); }
+
+        SomeoneJoinRoomBuilder &operator=(const SomeoneJoinRoomBuilder &);
+
+        flatbuffers::Offset<SomeoneJoinRoom> Finish() {
+            auto o = flatbuffers::Offset<SomeoneJoinRoom>(fbb_.EndTable(start_, 1));
+            return o;
+        }
     };
 
-    template<>
-    struct MsgTypeTraits<PlayerAttrChange> {
-        static const MsgType enum_value = MsgType_PlayerAttrChange;
+    inline flatbuffers::Offset<SomeoneJoinRoom> CreateSomeoneJoinRoom(flatbuffers::FlatBufferBuilder &_fbb,
+                                                                      flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<UserData>>> users = 0) {
+        SomeoneJoinRoomBuilder builder_(_fbb);
+        builder_.add_users(users);
+        return builder_.Finish();
+    }
+
+    inline flatbuffers::Offset<SomeoneJoinRoom> CreateSomeoneJoinRoomDirect(flatbuffers::FlatBufferBuilder &_fbb,
+                                                                            const std::vector<flatbuffers::Offset<UserData>> *users = nullptr) {
+        return CreateSomeoneJoinRoom(_fbb, users ? _fbb.CreateVector<flatbuffers::Offset<UserData>>(*users) : 0);
+    }
+
+    struct UserChangeRole FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
+        enum {
+            VT_UID = 4,
+            VT_ROLE = 6
+        };
+
+        const flatbuffers::String *uid() const { return GetPointer<const flatbuffers::String *>(VT_UID); }
+
+        int32_t role() const { return GetField<int32_t>(VT_ROLE, 0); }
+
+        bool Verify(flatbuffers::Verifier &verifier) const {
+            return VerifyTableStart(verifier) &&
+                   VerifyField<flatbuffers::uoffset_t>(verifier, VT_UID) &&
+                   verifier.Verify(uid()) &&
+                   VerifyField<int32_t>(verifier, VT_ROLE) &&
+                   verifier.EndTable();
+        }
     };
 
-    template<>
-    struct MsgTypeTraits<PlayerStatusChange> {
-        static const MsgType enum_value = MsgType_PlayerStatusChange;
+    struct UserChangeRoleBuilder {
+        flatbuffers::FlatBufferBuilder &fbb_;
+        flatbuffers::uoffset_t start_;
+
+        void add_uid(flatbuffers::Offset<flatbuffers::String> uid) { fbb_.AddOffset(UserChangeRole::VT_UID, uid); }
+
+        void add_role(int32_t role) { fbb_.AddElement<int32_t>(UserChangeRole::VT_ROLE, role, 0); }
+
+        UserChangeRoleBuilder(flatbuffers::FlatBufferBuilder &_fbb) : fbb_(_fbb) { start_ = fbb_.StartTable(); }
+
+        UserChangeRoleBuilder &operator=(const UserChangeRoleBuilder &);
+
+        flatbuffers::Offset<UserChangeRole> Finish() {
+            auto o = flatbuffers::Offset<UserChangeRole>(fbb_.EndTable(start_, 2));
+            return o;
+        }
     };
 
-    template<>
-    struct MsgTypeTraits<GameStatusChange> {
-        static const MsgType enum_value = MsgType_GameStatusChange;
+    inline flatbuffers::Offset<UserChangeRole> CreateUserChangeRole(flatbuffers::FlatBufferBuilder &_fbb,
+                                                                    flatbuffers::Offset<flatbuffers::String> uid = 0,
+                                                                    int32_t role = 0) {
+        UserChangeRoleBuilder builder_(_fbb);
+        builder_.add_role(role);
+        builder_.add_uid(uid);
+        return builder_.Finish();
+    }
+
+    inline flatbuffers::Offset<UserChangeRole> CreateUserChangeRoleDirect(flatbuffers::FlatBufferBuilder &_fbb,
+                                                                          const char *uid = nullptr,
+                                                                          int32_t role = 0) {
+        return CreateUserChangeRole(_fbb, uid ? _fbb.CreateString(uid) : 0, role);
+    }
+
+    struct UserChangeStats FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
+        enum {
+            VT_UID = 4,
+            VT_STAT = 6
+        };
+
+        const flatbuffers::String *uid() const { return GetPointer<const flatbuffers::String *>(VT_UID); }
+
+        int32_t stat() const { return GetField<int32_t>(VT_STAT, 0); }
+
+        bool Verify(flatbuffers::Verifier &verifier) const {
+            return VerifyTableStart(verifier) &&
+                   VerifyField<flatbuffers::uoffset_t>(verifier, VT_UID) &&
+                   verifier.Verify(uid()) &&
+                   VerifyField<int32_t>(verifier, VT_STAT) &&
+                   verifier.EndTable();
+        }
     };
 
-    inline bool VerifyMsgType(flatbuffers::Verifier &verifier, const void *union_obj, MsgType type);
+    struct UserChangeStatsBuilder {
+        flatbuffers::FlatBufferBuilder &fbb_;
+        flatbuffers::uoffset_t start_;
+
+        void add_uid(flatbuffers::Offset<flatbuffers::String> uid) { fbb_.AddOffset(UserChangeStats::VT_UID, uid); }
+
+        void add_stat(int32_t stat) { fbb_.AddElement<int32_t>(UserChangeStats::VT_STAT, stat, 0); }
+
+        UserChangeStatsBuilder(flatbuffers::FlatBufferBuilder &_fbb) : fbb_(_fbb) { start_ = fbb_.StartTable(); }
+
+        UserChangeStatsBuilder &operator=(const UserChangeStatsBuilder &);
+
+        flatbuffers::Offset<UserChangeStats> Finish() {
+            auto o = flatbuffers::Offset<UserChangeStats>(fbb_.EndTable(start_, 2));
+            return o;
+        }
+    };
+
+    inline flatbuffers::Offset<UserChangeStats> CreateUserChangeStats(flatbuffers::FlatBufferBuilder &_fbb,
+                                                                      flatbuffers::Offset<flatbuffers::String> uid = 0,
+                                                                      int32_t stat = 0) {
+        UserChangeStatsBuilder builder_(_fbb);
+        builder_.add_stat(stat);
+        builder_.add_uid(uid);
+        return builder_.Finish();
+    }
+
+    inline flatbuffers::Offset<UserChangeStats> CreateUserChangeStatsDirect(flatbuffers::FlatBufferBuilder &_fbb,
+                                                                            const char *uid = nullptr,
+                                                                            int32_t stat = 0) {
+        return CreateUserChangeStats(_fbb, uid ? _fbb.CreateString(uid) : 0, stat);
+    }
 
     struct PlayerJoin FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
         enum {
@@ -820,6 +1196,18 @@ namespace API {
         switch (type) {
             case MsgType_NONE:
                 return true;
+            case MsgType_Welcome:
+                return verifier.VerifyTable(reinterpret_cast<const Welcome *>(union_obj));
+            case MsgType_GotIt:
+                return verifier.VerifyTable(reinterpret_cast<const GotIt *>(union_obj));
+            case MsgType_JoinRoom:
+                return verifier.VerifyTable(reinterpret_cast<const JoinRoom *>(union_obj));
+            case MsgType_SomeoneJoinRoom:
+                return verifier.VerifyTable(reinterpret_cast<const SomeoneJoinRoom *>(union_obj));
+            case MsgType_UserChangeRole:
+                return verifier.VerifyTable(reinterpret_cast<const UserChangeRole *>(union_obj));
+            case MsgType_UserChangeStats:
+                return verifier.VerifyTable(reinterpret_cast<const UserChangeStats *>(union_obj));
             case MsgType_PlayerJoin:
                 return verifier.VerifyTable(reinterpret_cast<const PlayerJoin *>(union_obj));
             case MsgType_PlayerPosChange:

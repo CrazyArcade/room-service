@@ -1,7 +1,7 @@
 #ifndef SERVER_ROOM_H
 #define SERVER_ROOM_H
 
-
+#include "src/model/user.h"
 #include "src/model/player.h"
 #include "src/model/bubble.h"
 #include "src/model/prop.h"
@@ -11,12 +11,13 @@
 #include <unordered_map>
 #include <memory>
 
+#define FUCK(__funcName__) void __funcName__(const WS &ws);
 
 class Room {
 public:
     static Room *getInstance() {
         static Room INSTANCE;
-        INSTANCE.gameStatus = Status::PENDING;
+        INSTANCE.gameStatus = Status::WAITING;
         return &INSTANCE;
     }
 
@@ -54,24 +55,6 @@ public:
         this->init();
     }
 
-    void onPlayerJoin(const WS &ws);
-
-    void onPlayerLeave(const WS &ws);
-
-    void onPlayerPosChange(const WS &ws);
-
-    void onPlayerSetBubble(const WS &ws);
-
-    void onPlayerStatusChange(std::shared_ptr<Player> player, Player::Status status);
-
-    void onPlayerAttrChange(std::shared_ptr<Player> player, int propType);
-
-    void onBubbleBoom(std::shared_ptr<Bubble> bubble);
-
-    void onPropSet(const APP::Vec2 &coord);
-
-    void onGameStatusChange();
-
     void gameLoop();
 
 private:
@@ -85,12 +68,45 @@ private:
     int currentPlayer;
 
     Server *server;
+
+    /* game user */
+    std::unordered_map<objectID, User *> userList;
+
+    /* game entity */
     std::shared_ptr<Map> map;
     std::unordered_map<objectID, std::shared_ptr<Player>> playerList;
     std::unordered_map<objectID, std::shared_ptr<Bubble>> bubbleList;
     std::unordered_map<objectID, std::shared_ptr<Prop>> propList;
 
     std::shared_ptr<Player> getPlayerByUser(Server::wsuser user);
+
+    User *getUser(Server::wsuser user);
+
+    FUCK(onUserJoin);
+
+    FUCK(onGotIt);
+
+    FUCK(onJoinRoom);
+
+    FUCK(onUserChangeRole);
+
+    FUCK(onUserChangeStats);
+
+    FUCK(onUserLeave);
+
+    FUCK(onPlayerPosChange);
+
+    FUCK(onPlayerSetBubble);
+
+    void onPlayerStatusChange(std::shared_ptr<Player> player, Player::Status status);
+
+    void onPlayerAttrChange(std::shared_ptr<Player> player, int propType);
+
+    void onBubbleBoom(std::shared_ptr<Bubble> bubble);
+
+    void onPropSet(const APP::Vec2 &coord);
+
+    void onGameStatusChange(Status status);
 
 
 };

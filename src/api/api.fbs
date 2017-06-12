@@ -1,5 +1,31 @@
 namespace API;
 
+union MsgType {
+// login packet
+    Welcome,
+    GotIt,
+
+// room packet
+    JoinRoom,
+    SomeoneJoinRoom,
+    UserChangeRole,
+    UserChangeStats,
+
+// game packet
+    PlayerJoin,
+    PlayerPosChange,
+    PlayerSetBubble,
+
+    BubbleSet,
+    BubbleBoom,
+    PropSet,
+    PlayerEatProp,
+    PlayerAttrChange,
+    PlayerStatusChange,
+
+    GameStatusChange
+}
+
 enum Direction:byte {
     LEFT = 0, RIGHT = 1, UP = 2, DOWN = 3, NONE = 4
 }
@@ -19,12 +45,46 @@ enum GameStatus:byte {
     WAITING, PENDING, START, OVER
 }
 
+table UserData {
+    uid:string;
+    name:string;
+    role:int;
+}
+
+// user connect, server accept it and send back uid
+table Welcome {
+    uid:string;
+}
+// user got server call, send a name to join room
+table GotIt {
+    name:string;
+}
+
+// player join request ( send room id )
+table JoinRoom {}
+
+// new User join room, and update room info
+table SomeoneJoinRoom {
+    users:[UserData];
+}
+
+table UserChangeRole {
+    uid:string;
+    role:int;
+}
+
+table UserChangeStats {
+    uid:string;
+    stat:int;
+}
+
 table PlayerJoin {
     id:string;
     x:int;
     y:int;
     is_local:bool;
 }
+
 // receiver and sender
 table PlayerPosChange {
     id:string; // player id
@@ -83,23 +143,6 @@ table PlayerStatusChange {
 
 table GameStatusChange {
     status:GameStatus;
-}
-
-
-
-union MsgType {
-    PlayerJoin,
-    PlayerPosChange,
-    PlayerSetBubble,
-
-    BubbleSet,
-    BubbleBoom,
-    PropSet,
-    PlayerEatProp,
-    PlayerAttrChange,
-    PlayerStatusChange,
-
-    GameStatusChange
 }
 
 table Msg {

@@ -5,40 +5,110 @@ using namespace API;
 #define ON(code, funcName) server->on(code, CALLBACK(Room::funcName, this))
 
 void Room::init() {
-    ON(MsgType_PlayerJoin, onPlayerJoin);
-    ON(-1, onPlayerLeave);
+    ON(MsgType_PlayerJoin, onUserJoin);
+    ON(-1, onUserLeave);
+
+    ON(MsgType_GotIt, onGotIt);
+
+    ON(MsgType_JoinRoom, onJoinRoom);
+    ON(MsgType_UserChangeRole, onUserChangeRole);
+    ON(MsgType_UserChangeStats, onUserChangeStats);
 
     ON(MsgType_PlayerPosChange, onPlayerPosChange);
     ON(MsgType_PlayerSetBubble, onPlayerSetBubble);
-
 }
 
-void Room::onPlayerJoin(const WS &ws) {
-    if (currentPlayer > 0) {
-        auto player = Player::Factory();
-        currentPlayer--;
-        auto pos = map->getBornPoint();
-        player->setPosition(pos);
-        auto id = player->getObjectID();
-        this->playerList.insert({id, player});
+void Room::onUserJoin(const WS &ws) {
 
-        ws.user->setUserData(static_cast<void *>(player->getObjectIDPtr()));
-        // send
-        flatbuffers::FlatBufferBuilder builder;
-        auto _id = builder.CreateString(id);
-        auto orc = API::CreatePlayerJoin(builder, _id, pos.x, pos.y, true);
-        auto msg = API::CreateMsg(builder, API::MsgType_PlayerJoin, orc.Union());
-        builder.Finish(msg);
-        server->emit(builder, ws.user);
-
-        LOG_INFO << "player connect, id: " << id.data();
+    if (currentPlayer >= maxPlayer) {
+        ws.user->close();
     }
+
+    auto user = new User();
+    ws.user->setUserData(user);
+    userList.insert({user->uid, user});
+
+    flatbuffers::FlatBufferBuilder builder;
+    auto uid = builder.CreateString(user->uid);
+    auto orc = CreateWelcome(builder, uid);
+    auto msg = CreateMsg(builder, MsgType_Welcome, orc.Union());
+    builder.Finish(msg);
+    server->emit(builder, ws.user);
+
+
+
+//    if (currentPlayer > 0) {
+//        auto player = Player::Factory();
+//        currentPlayer--;
+//        auto pos = map->getBornPoint();
+//        player->setPosition(pos);
+//        auto id = player->getObjectID();
+//        this->playerList.insert({id, player});
+//
+//        ws.user->setUserData(static_cast<void *>(player->getObjectIDPtr()));
+//        // send
+//        flatbuffers::FlatBufferBuilder builder;
+//        auto _id = builder.CreateString(id);
+//        auto orc = API::CreatePlayerJoin(builder, _id, pos.x, pos.y, true);
+//        auto msg = API::CreateMsg(builder, API::MsgType_PlayerJoin, orc.Union());
+//        builder.Finish(msg);
+//        server->emit(builder, ws.user);
+//
+//        LOG_INFO << "player connect, id: " << id.data();
+//    }
 }
 
-void Room::onPlayerLeave(const WS &ws) {
-    auto player = getPlayerByUser(ws.user);
-    this->playerList.erase(player->getObjectID());
-    currentPlayer++;
+void Room::onGotIt(const WS &ws) {
+    auto data = static_cast<const GotIt *>(ws.data->data());
+    auto name = data->name()->str();
+    name.substr(0, 16);
+    getUser(ws.user)->setName(name);
+}
+
+void Room::onJoinRoom(const WS &ws) {
+    if (userList.size() == 0) return;
+
+    flatbuffers::FlatBufferBuilder builder;
+
+    std::vector<flatbuffers::Offset<UserData>> usersVector;
+
+    for (auto it = userList.cbegin(); it != userList.cend();) {
+        auto user = it->second;
+        auto uid = builder.CreateString(user->uid);
+        auto name = builder.CreateString(user->getName());
+        auto userData = CreateUserData(builder, uid, name, user->getRole());
+        usersVector.push_back(userData);
+        ++it;
+    }
+    auto users = builder.CreateVector(usersVector);
+    auto orc = CreateSomeoneJoinRoom(builder, users);
+    auto msg = CreateMsg(builder, MsgType_SomeoneJoinRoom, orc.Union());
+    builder.Finish(msg);
+
+    server->emit(builder);
+}
+
+void Room::onUserChangeRole(const WS &ws) {
+    auto data = static_cast<const UserChangeRole *>(ws.data->data());
+    auto role = data->role();
+    getUser(ws.user)->setRole(role);
+
+    server->emit(ws.recv, ws.length);
+}
+
+void Room::onUserChangeStats(const WS &ws) {
+    auto data = static_cast<const UserChangeStats *>(ws.data->data());
+    auto stats = data->stat();
+    getUser(ws.user)->setStats(stats);
+
+    server->emit(ws.recv, ws.length);
+}
+
+void Room::onUserLeave(const WS &ws) {
+//    auto user =
+//    auto player = getPlayerByUser(ws.user);
+//    this->playerList.erase(player->getObjectID());
+//    currentPlayer++;
 }
 
 void Room::onPlayerPosChange(const WS &ws) {
@@ -184,33 +254,44 @@ void Room::onPlayerStatusChange(std::shared_ptr<Player> player, Player::Status s
 }
 
 void Room::gameLoop() {
-    // safely erase
-    for (auto it = bubbleList.begin(); it != bubbleList.end();) {
-        if (it->first.empty()) {
-            ++it;
-            continue;
-        };
-        auto bubble = it->second;
-        if (bubble->isCanBoom()) {
-            onBubbleBoom(bubble);
-            bubbleList.erase(it++);
-        } else {
+    if (gameStatus == Status::WAITING) {
+        auto total = userList.size();
+        auto readySum = 0;
+        for (auto it = userList.cbegin(); it != userList.cend();) {
+            if (it->second->getStats() == ::User::Stats::Ready) ++readySum;
             ++it;
         }
-    }
+        if (readySum == total) onGameStatusChange(Status::PENDING);
 
-    for (auto it = playerList.begin(); it != playerList.end();) {
-        if (it->first.empty()) {
-            ++it;
-            continue;
-        };
-        auto player = it->second;
-        if (player->getStatus() == Player::Status::FREEZE) {
-            if (player->isDie()) {
-                onPlayerStatusChange(player, Player::Status::DIE);
+    } else if (gameStatus == Status::START) {
+        // safely erase
+        for (auto it = bubbleList.begin(); it != bubbleList.end();) {
+            if (it->first.empty()) {
+                ++it;
+                continue;
+            };
+            auto bubble = it->second;
+            if (bubble->isCanBoom()) {
+                onBubbleBoom(bubble);
+                bubbleList.erase(it++);
+            } else {
+                ++it;
             }
         }
-        ++it;
+
+        for (auto it = playerList.begin(); it != playerList.end();) {
+            if (it->first.empty()) {
+                ++it;
+                continue;
+            };
+            auto player = it->second;
+            if (player->getStatus() == Player::Status::FREEZE) {
+                if (player->isDie()) {
+                    onPlayerStatusChange(player, Player::Status::DIE);
+                }
+            }
+            ++it;
+        }
     }
 }
 
@@ -257,6 +338,27 @@ void Room::onPlayerAttrChange(std::shared_ptr<Player> player, int type) {
     auto id = builder.CreateString(player->getObjectID());
     auto orc = CreatePlayerAttrChange(builder, id, attr.speed, attr.damage, attr.maxBubble, attr.currentBubble);
     auto msg = CreateMsg(builder, MsgType_PlayerAttrChange, orc.Union());
+    builder.Finish(msg);
+
+    server->emit(builder);
+}
+
+inline User *Room::getUser(Server::wsuser user) {
+    return static_cast<User *>(user->getUserData());
+}
+
+void Room::onGameStatusChange(Status status) {
+    if (status == Status::PENDING) {
+        // init game
+    } else if (status == Status::START) {
+        // TODO
+    } else {
+
+    }
+
+    flatbuffers::FlatBufferBuilder builder;
+    auto orc = CreateGameStatusChange(builder, static_cast<GameStatus>(status));
+    auto msg = CreateMsg(builder, MsgType_GameStatusChange, orc.Union());
     builder.Finish(msg);
 
     server->emit(builder);
