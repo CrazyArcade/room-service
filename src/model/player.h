@@ -44,6 +44,8 @@ public:
                 DIE
     };
 
+    void setObjectID(const std::string &id);
+
     void setName(std::string name);
     std::string getName() const;
 

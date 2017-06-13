@@ -114,4 +114,8 @@ bool Player::isDie() {
     return time(nullptr) >= dieAt;
 }
 
+void Player::setObjectID(const std::string &id) {
+    _id = id;
+}
+
 

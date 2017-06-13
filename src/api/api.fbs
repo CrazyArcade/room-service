@@ -12,7 +12,7 @@ union MsgType {
     UserChangeStats,
 
 // game packet
-    PlayerJoin,
+    GameInit,
     PlayerPosChange,
     PlayerSetBubble,
 
@@ -78,11 +78,14 @@ table UserChangeStats {
     stat:int;
 }
 
-table PlayerJoin {
+table PlayerData {
     id:string;
     x:int;
     y:int;
-    is_local:bool;
+}
+
+table GameInit {
+    players:[PlayerData];
 }
 
 // receiver and sender

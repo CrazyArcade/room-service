@@ -98,6 +98,8 @@ private:
 
     FUCK(onPlayerSetBubble);
 
+    void initGame();
+
     void onPlayerStatusChange(std::shared_ptr<Player> player, Player::Status status);
 
     void onPlayerAttrChange(std::shared_ptr<Player> player, int propType);

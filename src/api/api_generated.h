@@ -21,7 +21,9 @@ namespace API {
 
     struct UserChangeStats;
 
-    struct PlayerJoin;
+    struct PlayerData;
+
+    struct GameInit;
 
     struct PlayerPosChange;
 
@@ -51,7 +53,7 @@ namespace API {
         MsgType_SomeoneJoinRoom = 4,
         MsgType_UserChangeRole = 5,
         MsgType_UserChangeStats = 6,
-        MsgType_PlayerJoin = 7,
+        MsgType_GameInit = 7,
         MsgType_PlayerPosChange = 8,
         MsgType_PlayerSetBubble = 9,
         MsgType_BubbleSet = 10,
@@ -67,8 +69,8 @@ namespace API {
 
     inline const char **EnumNamesMsgType() {
         static const char *names[] = {"NONE", "Welcome", "GotIt", "JoinRoom", "SomeoneJoinRoom", "UserChangeRole",
-                                      "UserChangeStats", "PlayerJoin", "PlayerPosChange", "PlayerSetBubble",
-                                      "BubbleSet", "BubbleBoom", "PropSet", "PlayerEatProp", "PlayerAttrChange",
+                                      "UserChangeStats", "GameInit", "PlayerPosChange", "PlayerSetBubble", "BubbleSet",
+                                      "BubbleBoom", "PropSet", "PlayerEatProp", "PlayerAttrChange",
                                       "PlayerStatusChange", "GameStatusChange", nullptr};
         return names;
     }
@@ -111,8 +113,8 @@ namespace API {
     };
 
     template<>
-    struct MsgTypeTraits<PlayerJoin> {
-        static const MsgType enum_value = MsgType_PlayerJoin;
+    struct MsgTypeTraits<GameInit> {
+        static const MsgType enum_value = MsgType_GameInit;
     };
 
     template<>
@@ -544,12 +546,11 @@ namespace API {
         return CreateUserChangeStats(_fbb, uid ? _fbb.CreateString(uid) : 0, stat);
     }
 
-    struct PlayerJoin FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
+    struct PlayerData FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
         enum {
             VT_ID = 4,
             VT_X = 6,
-            VT_Y = 8,
-            VT_IS_LOCAL = 10
+            VT_Y = 8
         };
 
         const flatbuffers::String *id() const { return GetPointer<const flatbuffers::String *>(VT_ID); }
@@ -558,62 +559,99 @@ namespace API {
 
         int32_t y() const { return GetField<int32_t>(VT_Y, 0); }
 
-        bool is_local() const { return GetField<uint8_t>(VT_IS_LOCAL, 0) != 0; }
-
         bool Verify(flatbuffers::Verifier &verifier) const {
             return VerifyTableStart(verifier) &&
                    VerifyField<flatbuffers::uoffset_t>(verifier, VT_ID) &&
                    verifier.Verify(id()) &&
                    VerifyField<int32_t>(verifier, VT_X) &&
                    VerifyField<int32_t>(verifier, VT_Y) &&
-                   VerifyField<uint8_t>(verifier, VT_IS_LOCAL) &&
                    verifier.EndTable();
         }
     };
 
-    struct PlayerJoinBuilder {
+    struct PlayerDataBuilder {
         flatbuffers::FlatBufferBuilder &fbb_;
         flatbuffers::uoffset_t start_;
 
-        void add_id(flatbuffers::Offset<flatbuffers::String> id) { fbb_.AddOffset(PlayerJoin::VT_ID, id); }
+        void add_id(flatbuffers::Offset<flatbuffers::String> id) { fbb_.AddOffset(PlayerData::VT_ID, id); }
 
-        void add_x(int32_t x) { fbb_.AddElement<int32_t>(PlayerJoin::VT_X, x, 0); }
+        void add_x(int32_t x) { fbb_.AddElement<int32_t>(PlayerData::VT_X, x, 0); }
 
-        void add_y(int32_t y) { fbb_.AddElement<int32_t>(PlayerJoin::VT_Y, y, 0); }
+        void add_y(int32_t y) { fbb_.AddElement<int32_t>(PlayerData::VT_Y, y, 0); }
 
-        void add_is_local(bool is_local) {
-            fbb_.AddElement<uint8_t>(PlayerJoin::VT_IS_LOCAL, static_cast<uint8_t>(is_local), 0);
-        }
+        PlayerDataBuilder(flatbuffers::FlatBufferBuilder &_fbb) : fbb_(_fbb) { start_ = fbb_.StartTable(); }
 
-        PlayerJoinBuilder(flatbuffers::FlatBufferBuilder &_fbb) : fbb_(_fbb) { start_ = fbb_.StartTable(); }
+        PlayerDataBuilder &operator=(const PlayerDataBuilder &);
 
-        PlayerJoinBuilder &operator=(const PlayerJoinBuilder &);
-
-        flatbuffers::Offset<PlayerJoin> Finish() {
-            auto o = flatbuffers::Offset<PlayerJoin>(fbb_.EndTable(start_, 4));
+        flatbuffers::Offset<PlayerData> Finish() {
+            auto o = flatbuffers::Offset<PlayerData>(fbb_.EndTable(start_, 3));
             return o;
         }
     };
 
-    inline flatbuffers::Offset<PlayerJoin> CreatePlayerJoin(flatbuffers::FlatBufferBuilder &_fbb,
+    inline flatbuffers::Offset<PlayerData> CreatePlayerData(flatbuffers::FlatBufferBuilder &_fbb,
                                                             flatbuffers::Offset<flatbuffers::String> id = 0,
                                                             int32_t x = 0,
-                                                            int32_t y = 0,
-                                                            bool is_local = false) {
-        PlayerJoinBuilder builder_(_fbb);
+                                                            int32_t y = 0) {
+        PlayerDataBuilder builder_(_fbb);
         builder_.add_y(y);
         builder_.add_x(x);
         builder_.add_id(id);
-        builder_.add_is_local(is_local);
         return builder_.Finish();
     }
 
-    inline flatbuffers::Offset<PlayerJoin> CreatePlayerJoinDirect(flatbuffers::FlatBufferBuilder &_fbb,
+    inline flatbuffers::Offset<PlayerData> CreatePlayerDataDirect(flatbuffers::FlatBufferBuilder &_fbb,
                                                                   const char *id = nullptr,
                                                                   int32_t x = 0,
-                                                                  int32_t y = 0,
-                                                                  bool is_local = false) {
-        return CreatePlayerJoin(_fbb, id ? _fbb.CreateString(id) : 0, x, y, is_local);
+                                                                  int32_t y = 0) {
+        return CreatePlayerData(_fbb, id ? _fbb.CreateString(id) : 0, x, y);
+    }
+
+    struct GameInit FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
+        enum {
+            VT_PLAYERS = 4
+        };
+
+        const flatbuffers::Vector<flatbuffers::Offset<PlayerData>> *
+        players() const { return GetPointer<const flatbuffers::Vector<flatbuffers::Offset<PlayerData>> *>(VT_PLAYERS); }
+
+        bool Verify(flatbuffers::Verifier &verifier) const {
+            return VerifyTableStart(verifier) &&
+                   VerifyField<flatbuffers::uoffset_t>(verifier, VT_PLAYERS) &&
+                   verifier.Verify(players()) &&
+                   verifier.VerifyVectorOfTables(players()) &&
+                   verifier.EndTable();
+        }
+    };
+
+    struct GameInitBuilder {
+        flatbuffers::FlatBufferBuilder &fbb_;
+        flatbuffers::uoffset_t start_;
+
+        void add_players(flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<PlayerData>>> players) {
+            fbb_.AddOffset(GameInit::VT_PLAYERS, players);
+        }
+
+        GameInitBuilder(flatbuffers::FlatBufferBuilder &_fbb) : fbb_(_fbb) { start_ = fbb_.StartTable(); }
+
+        GameInitBuilder &operator=(const GameInitBuilder &);
+
+        flatbuffers::Offset<GameInit> Finish() {
+            auto o = flatbuffers::Offset<GameInit>(fbb_.EndTable(start_, 1));
+            return o;
+        }
+    };
+
+    inline flatbuffers::Offset<GameInit> CreateGameInit(flatbuffers::FlatBufferBuilder &_fbb,
+                                                        flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<PlayerData>>> players = 0) {
+        GameInitBuilder builder_(_fbb);
+        builder_.add_players(players);
+        return builder_.Finish();
+    }
+
+    inline flatbuffers::Offset<GameInit> CreateGameInitDirect(flatbuffers::FlatBufferBuilder &_fbb,
+                                                              const std::vector<flatbuffers::Offset<PlayerData>> *players = nullptr) {
+        return CreateGameInit(_fbb, players ? _fbb.CreateVector<flatbuffers::Offset<PlayerData>>(*players) : 0);
     }
 
     struct PlayerPosChange FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
@@ -1208,8 +1246,8 @@ namespace API {
                 return verifier.VerifyTable(reinterpret_cast<const UserChangeRole *>(union_obj));
             case MsgType_UserChangeStats:
                 return verifier.VerifyTable(reinterpret_cast<const UserChangeStats *>(union_obj));
-            case MsgType_PlayerJoin:
-                return verifier.VerifyTable(reinterpret_cast<const PlayerJoin *>(union_obj));
+            case MsgType_GameInit:
+                return verifier.VerifyTable(reinterpret_cast<const GameInit *>(union_obj));
             case MsgType_PlayerPosChange:
                 return verifier.VerifyTable(reinterpret_cast<const PlayerPosChange *>(union_obj));
             case MsgType_PlayerSetBubble:

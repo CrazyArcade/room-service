@@ -3,7 +3,7 @@
 using namespace API;
 
 void Server::onConnection(Server::wsuser user) {
-    callFunc(MsgType_PlayerJoin)(WS(nullptr, 0, nullptr, user));
+    callFunc(-2)(WS(nullptr, 0, nullptr, user));
 }
 
 void Server::onDisconnection(Server::wsuser user) {

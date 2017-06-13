@@ -5,7 +5,7 @@ using namespace API;
 #define ON(code, funcName) server->on(code, CALLBACK(Room::funcName, this))
 
 void Room::init() {
-    ON(MsgType_PlayerJoin, onUserJoin);
+    ON(-2, onUserJoin);
     ON(-1, onUserLeave);
 
     ON(MsgType_GotIt, onGotIt);
@@ -34,28 +34,6 @@ void Room::onUserJoin(const WS &ws) {
     auto msg = CreateMsg(builder, MsgType_Welcome, orc.Union());
     builder.Finish(msg);
     server->emit(builder, ws.user);
-
-
-
-//    if (currentPlayer > 0) {
-//        auto player = Player::Factory();
-//        currentPlayer--;
-//        auto pos = map->getBornPoint();
-//        player->setPosition(pos);
-//        auto id = player->getObjectID();
-//        this->playerList.insert({id, player});
-//
-//        ws.user->setUserData(static_cast<void *>(player->getObjectIDPtr()));
-//        // send
-//        flatbuffers::FlatBufferBuilder builder;
-//        auto _id = builder.CreateString(id);
-//        auto orc = API::CreatePlayerJoin(builder, _id, pos.x, pos.y, true);
-//        auto msg = API::CreateMsg(builder, API::MsgType_PlayerJoin, orc.Union());
-//        builder.Finish(msg);
-//        server->emit(builder, ws.user);
-//
-//        LOG_INFO << "player connect, id: " << id.data();
-//    }
 }
 
 void Room::onGotIt(const WS &ws) {
@@ -101,7 +79,11 @@ void Room::onUserChangeStats(const WS &ws) {
     auto stats = data->stat();
     getUser(ws.user)->setStats(stats);
 
-    server->emit(ws.recv, ws.length);
+    if (stats == User::Stats::Done) {
+        //TODO
+    } else {
+        server->emit(ws.recv, ws.length);
+    }
 }
 
 void Room::onUserLeave(const WS &ws) {
@@ -254,15 +236,17 @@ void Room::onPlayerStatusChange(std::shared_ptr<Player> player, Player::Status s
 }
 
 void Room::gameLoop() {
-    if (gameStatus == Status::WAITING) {
+    if (gameStatus == Status::WAITING || gameStatus == Status::PENDING) {
         auto total = userList.size();
         auto readySum = 0;
         for (auto it = userList.cbegin(); it != userList.cend();) {
             if (it->second->getStats() == ::User::Stats::Ready) ++readySum;
             ++it;
         }
-        if (readySum == total) onGameStatusChange(Status::PENDING);
-
+        if (readySum == total) {
+            auto nextStatus = static_cast<Status>((int) gameStatus + 1);
+            onGameStatusChange(nextStatus);
+        }
     } else if (gameStatus == Status::START) {
         // safely erase
         for (auto it = bubbleList.begin(); it != bubbleList.end();) {
@@ -279,6 +263,7 @@ void Room::gameLoop() {
             }
         }
 
+        auto totalPlayer = playerList.size();
         for (auto it = playerList.begin(); it != playerList.end();) {
             if (it->first.empty()) {
                 ++it;
@@ -290,8 +275,12 @@ void Room::gameLoop() {
                     onPlayerStatusChange(player, Player::Status::DIE);
                 }
             }
+            if (player->getStatus() == Player::Status::DIE) {
+                --totalPlayer;
+            }
             ++it;
         }
+        if (totalPlayer == 1) onGameStatusChange(Status::OVER);
     }
 }
 
@@ -348,17 +337,37 @@ inline User *Room::getUser(Server::wsuser user) {
 }
 
 void Room::onGameStatusChange(Status status) {
-    if (status == Status::PENDING) {
-        // init game
-    } else if (status == Status::START) {
-        // TODO
-    } else {
-
-    }
-
     flatbuffers::FlatBufferBuilder builder;
     auto orc = CreateGameStatusChange(builder, static_cast<GameStatus>(status));
     auto msg = CreateMsg(builder, MsgType_GameStatusChange, orc.Union());
+    builder.Finish(msg);
+
+    server->emit(builder);
+}
+
+void Room::initGame() {
+    flatbuffers::FlatBufferBuilder builder;
+    std::vector<flatbuffers::Offset<PlayerData>> playersVector;
+
+    for (auto it = userList.cbegin(); it != userList.cend(); ++it) {
+        auto uid = it->first;
+        auto user = it->second;
+
+        auto player = Player::Factory();
+        player->setObjectID(uid);
+        auto pos = map->getBornPoint();
+        player->setPosition(pos);
+
+        this->playerList.insert({uid, player});
+        auto id = builder.CreateString(uid);
+        auto playerData = CreatePlayerData(builder, id, pos.x, pos.y);
+
+        playersVector.push_back(playerData);
+    }
+
+    auto players = builder.CreateVector(playersVector);
+    auto orc = CreateGameInit(builder, players);
+    auto msg = CreateMsg(builder, MsgType_GameInit, orc.Union());
     builder.Finish(msg);
 
     server->emit(builder);
