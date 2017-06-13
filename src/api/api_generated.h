@@ -15,7 +15,7 @@ namespace API {
 
     struct JoinRoom;
 
-    struct SomeoneJoinRoom;
+    struct RoomInfoUpdate;
 
     struct UserChangeRole;
 
@@ -50,7 +50,7 @@ namespace API {
         MsgType_Welcome = 1,
         MsgType_GotIt = 2,
         MsgType_JoinRoom = 3,
-        MsgType_SomeoneJoinRoom = 4,
+        MsgType_RoomInfoUpdate = 4,
         MsgType_UserChangeRole = 5,
         MsgType_UserChangeStats = 6,
         MsgType_GameInit = 7,
@@ -68,7 +68,7 @@ namespace API {
     };
 
     inline const char **EnumNamesMsgType() {
-        static const char *names[] = {"NONE", "Welcome", "GotIt", "JoinRoom", "SomeoneJoinRoom", "UserChangeRole",
+        static const char *names[] = {"NONE", "Welcome", "GotIt", "JoinRoom", "RoomInfoUpdate", "UserChangeRole",
                                       "UserChangeStats", "GameInit", "PlayerPosChange", "PlayerSetBubble", "BubbleSet",
                                       "BubbleBoom", "PropSet", "PlayerEatProp", "PlayerAttrChange",
                                       "PlayerStatusChange", "GameStatusChange", nullptr};
@@ -98,8 +98,8 @@ namespace API {
     };
 
     template<>
-    struct MsgTypeTraits<SomeoneJoinRoom> {
-        static const MsgType enum_value = MsgType_SomeoneJoinRoom;
+    struct MsgTypeTraits<RoomInfoUpdate> {
+        static const MsgType enum_value = MsgType_RoomInfoUpdate;
     };
 
     template<>
@@ -395,7 +395,7 @@ namespace API {
         return builder_.Finish();
     }
 
-    struct SomeoneJoinRoom FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
+    struct RoomInfoUpdate FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
         enum {
             VT_USERS = 4
         };
@@ -412,50 +412,45 @@ namespace API {
         }
     };
 
-    struct SomeoneJoinRoomBuilder {
+    struct RoomInfoUpdateBuilder {
         flatbuffers::FlatBufferBuilder &fbb_;
         flatbuffers::uoffset_t start_;
 
         void add_users(flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<UserData>>> users) {
-            fbb_.AddOffset(SomeoneJoinRoom::VT_USERS, users);
+            fbb_.AddOffset(RoomInfoUpdate::VT_USERS, users);
         }
 
-        SomeoneJoinRoomBuilder(flatbuffers::FlatBufferBuilder &_fbb) : fbb_(_fbb) { start_ = fbb_.StartTable(); }
+        RoomInfoUpdateBuilder(flatbuffers::FlatBufferBuilder &_fbb) : fbb_(_fbb) { start_ = fbb_.StartTable(); }
 
-        SomeoneJoinRoomBuilder &operator=(const SomeoneJoinRoomBuilder &);
+        RoomInfoUpdateBuilder &operator=(const RoomInfoUpdateBuilder &);
 
-        flatbuffers::Offset<SomeoneJoinRoom> Finish() {
-            auto o = flatbuffers::Offset<SomeoneJoinRoom>(fbb_.EndTable(start_, 1));
+        flatbuffers::Offset<RoomInfoUpdate> Finish() {
+            auto o = flatbuffers::Offset<RoomInfoUpdate>(fbb_.EndTable(start_, 1));
             return o;
         }
     };
 
-    inline flatbuffers::Offset<SomeoneJoinRoom> CreateSomeoneJoinRoom(flatbuffers::FlatBufferBuilder &_fbb,
-                                                                      flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<UserData>>> users = 0) {
-        SomeoneJoinRoomBuilder builder_(_fbb);
+    inline flatbuffers::Offset<RoomInfoUpdate> CreateRoomInfoUpdate(flatbuffers::FlatBufferBuilder &_fbb,
+                                                                    flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<UserData>>> users = 0) {
+        RoomInfoUpdateBuilder builder_(_fbb);
         builder_.add_users(users);
         return builder_.Finish();
     }
 
-    inline flatbuffers::Offset<SomeoneJoinRoom> CreateSomeoneJoinRoomDirect(flatbuffers::FlatBufferBuilder &_fbb,
-                                                                            const std::vector<flatbuffers::Offset<UserData>> *users = nullptr) {
-        return CreateSomeoneJoinRoom(_fbb, users ? _fbb.CreateVector<flatbuffers::Offset<UserData>>(*users) : 0);
+    inline flatbuffers::Offset<RoomInfoUpdate> CreateRoomInfoUpdateDirect(flatbuffers::FlatBufferBuilder &_fbb,
+                                                                          const std::vector<flatbuffers::Offset<UserData>> *users = nullptr) {
+        return CreateRoomInfoUpdate(_fbb, users ? _fbb.CreateVector<flatbuffers::Offset<UserData>>(*users) : 0);
     }
 
     struct UserChangeRole FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
         enum {
-            VT_UID = 4,
-            VT_ROLE = 6
+            VT_ROLE = 4
         };
-
-        const flatbuffers::String *uid() const { return GetPointer<const flatbuffers::String *>(VT_UID); }
 
         int32_t role() const { return GetField<int32_t>(VT_ROLE, 0); }
 
         bool Verify(flatbuffers::Verifier &verifier) const {
             return VerifyTableStart(verifier) &&
-                   VerifyField<flatbuffers::uoffset_t>(verifier, VT_UID) &&
-                   verifier.Verify(uid()) &&
                    VerifyField<int32_t>(verifier, VT_ROLE) &&
                    verifier.EndTable();
         }
@@ -465,8 +460,6 @@ namespace API {
         flatbuffers::FlatBufferBuilder &fbb_;
         flatbuffers::uoffset_t start_;
 
-        void add_uid(flatbuffers::Offset<flatbuffers::String> uid) { fbb_.AddOffset(UserChangeRole::VT_UID, uid); }
-
         void add_role(int32_t role) { fbb_.AddElement<int32_t>(UserChangeRole::VT_ROLE, role, 0); }
 
         UserChangeRoleBuilder(flatbuffers::FlatBufferBuilder &_fbb) : fbb_(_fbb) { start_ = fbb_.StartTable(); }
@@ -474,40 +467,27 @@ namespace API {
         UserChangeRoleBuilder &operator=(const UserChangeRoleBuilder &);
 
         flatbuffers::Offset<UserChangeRole> Finish() {
-            auto o = flatbuffers::Offset<UserChangeRole>(fbb_.EndTable(start_, 2));
+            auto o = flatbuffers::Offset<UserChangeRole>(fbb_.EndTable(start_, 1));
             return o;
         }
     };
 
     inline flatbuffers::Offset<UserChangeRole> CreateUserChangeRole(flatbuffers::FlatBufferBuilder &_fbb,
-                                                                    flatbuffers::Offset<flatbuffers::String> uid = 0,
                                                                     int32_t role = 0) {
         UserChangeRoleBuilder builder_(_fbb);
         builder_.add_role(role);
-        builder_.add_uid(uid);
         return builder_.Finish();
-    }
-
-    inline flatbuffers::Offset<UserChangeRole> CreateUserChangeRoleDirect(flatbuffers::FlatBufferBuilder &_fbb,
-                                                                          const char *uid = nullptr,
-                                                                          int32_t role = 0) {
-        return CreateUserChangeRole(_fbb, uid ? _fbb.CreateString(uid) : 0, role);
     }
 
     struct UserChangeStats FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
         enum {
-            VT_UID = 4,
-            VT_STAT = 6
+            VT_STAT = 4
         };
-
-        const flatbuffers::String *uid() const { return GetPointer<const flatbuffers::String *>(VT_UID); }
 
         int32_t stat() const { return GetField<int32_t>(VT_STAT, 0); }
 
         bool Verify(flatbuffers::Verifier &verifier) const {
             return VerifyTableStart(verifier) &&
-                   VerifyField<flatbuffers::uoffset_t>(verifier, VT_UID) &&
-                   verifier.Verify(uid()) &&
                    VerifyField<int32_t>(verifier, VT_STAT) &&
                    verifier.EndTable();
         }
@@ -517,8 +497,6 @@ namespace API {
         flatbuffers::FlatBufferBuilder &fbb_;
         flatbuffers::uoffset_t start_;
 
-        void add_uid(flatbuffers::Offset<flatbuffers::String> uid) { fbb_.AddOffset(UserChangeStats::VT_UID, uid); }
-
         void add_stat(int32_t stat) { fbb_.AddElement<int32_t>(UserChangeStats::VT_STAT, stat, 0); }
 
         UserChangeStatsBuilder(flatbuffers::FlatBufferBuilder &_fbb) : fbb_(_fbb) { start_ = fbb_.StartTable(); }
@@ -526,31 +504,24 @@ namespace API {
         UserChangeStatsBuilder &operator=(const UserChangeStatsBuilder &);
 
         flatbuffers::Offset<UserChangeStats> Finish() {
-            auto o = flatbuffers::Offset<UserChangeStats>(fbb_.EndTable(start_, 2));
+            auto o = flatbuffers::Offset<UserChangeStats>(fbb_.EndTable(start_, 1));
             return o;
         }
     };
 
     inline flatbuffers::Offset<UserChangeStats> CreateUserChangeStats(flatbuffers::FlatBufferBuilder &_fbb,
-                                                                      flatbuffers::Offset<flatbuffers::String> uid = 0,
                                                                       int32_t stat = 0) {
         UserChangeStatsBuilder builder_(_fbb);
         builder_.add_stat(stat);
-        builder_.add_uid(uid);
         return builder_.Finish();
-    }
-
-    inline flatbuffers::Offset<UserChangeStats> CreateUserChangeStatsDirect(flatbuffers::FlatBufferBuilder &_fbb,
-                                                                            const char *uid = nullptr,
-                                                                            int32_t stat = 0) {
-        return CreateUserChangeStats(_fbb, uid ? _fbb.CreateString(uid) : 0, stat);
     }
 
     struct PlayerData FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
         enum {
             VT_ID = 4,
             VT_X = 6,
-            VT_Y = 8
+            VT_Y = 8,
+            VT_ROLE = 10
         };
 
         const flatbuffers::String *id() const { return GetPointer<const flatbuffers::String *>(VT_ID); }
@@ -559,12 +530,15 @@ namespace API {
 
         int32_t y() const { return GetField<int32_t>(VT_Y, 0); }
 
+        int32_t role() const { return GetField<int32_t>(VT_ROLE, 0); }
+
         bool Verify(flatbuffers::Verifier &verifier) const {
             return VerifyTableStart(verifier) &&
                    VerifyField<flatbuffers::uoffset_t>(verifier, VT_ID) &&
                    verifier.Verify(id()) &&
                    VerifyField<int32_t>(verifier, VT_X) &&
                    VerifyField<int32_t>(verifier, VT_Y) &&
+                   VerifyField<int32_t>(verifier, VT_ROLE) &&
                    verifier.EndTable();
         }
     };
@@ -579,12 +553,14 @@ namespace API {
 
         void add_y(int32_t y) { fbb_.AddElement<int32_t>(PlayerData::VT_Y, y, 0); }
 
+        void add_role(int32_t role) { fbb_.AddElement<int32_t>(PlayerData::VT_ROLE, role, 0); }
+
         PlayerDataBuilder(flatbuffers::FlatBufferBuilder &_fbb) : fbb_(_fbb) { start_ = fbb_.StartTable(); }
 
         PlayerDataBuilder &operator=(const PlayerDataBuilder &);
 
         flatbuffers::Offset<PlayerData> Finish() {
-            auto o = flatbuffers::Offset<PlayerData>(fbb_.EndTable(start_, 3));
+            auto o = flatbuffers::Offset<PlayerData>(fbb_.EndTable(start_, 4));
             return o;
         }
     };
@@ -592,8 +568,10 @@ namespace API {
     inline flatbuffers::Offset<PlayerData> CreatePlayerData(flatbuffers::FlatBufferBuilder &_fbb,
                                                             flatbuffers::Offset<flatbuffers::String> id = 0,
                                                             int32_t x = 0,
-                                                            int32_t y = 0) {
+                                                            int32_t y = 0,
+                                                            int32_t role = 0) {
         PlayerDataBuilder builder_(_fbb);
+        builder_.add_role(role);
         builder_.add_y(y);
         builder_.add_x(x);
         builder_.add_id(id);
@@ -603,8 +581,9 @@ namespace API {
     inline flatbuffers::Offset<PlayerData> CreatePlayerDataDirect(flatbuffers::FlatBufferBuilder &_fbb,
                                                                   const char *id = nullptr,
                                                                   int32_t x = 0,
-                                                                  int32_t y = 0) {
-        return CreatePlayerData(_fbb, id ? _fbb.CreateString(id) : 0, x, y);
+                                                                  int32_t y = 0,
+                                                                  int32_t role = 0) {
+        return CreatePlayerData(_fbb, id ? _fbb.CreateString(id) : 0, x, y, role);
     }
 
     struct GameInit FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
@@ -1240,8 +1219,8 @@ namespace API {
                 return verifier.VerifyTable(reinterpret_cast<const GotIt *>(union_obj));
             case MsgType_JoinRoom:
                 return verifier.VerifyTable(reinterpret_cast<const JoinRoom *>(union_obj));
-            case MsgType_SomeoneJoinRoom:
-                return verifier.VerifyTable(reinterpret_cast<const SomeoneJoinRoom *>(union_obj));
+            case MsgType_RoomInfoUpdate:
+                return verifier.VerifyTable(reinterpret_cast<const RoomInfoUpdate *>(union_obj));
             case MsgType_UserChangeRole:
                 return verifier.VerifyTable(reinterpret_cast<const UserChangeRole *>(union_obj));
             case MsgType_UserChangeStats:

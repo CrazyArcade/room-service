@@ -43,7 +43,8 @@ public:
     void setMap(const std::string &mapName) {
         try {
             map = std::make_shared<Map>(mapName);
-            maxPlayer = currentPlayer = map->getMaxPlayer();
+            maxPlayer = map->getMaxPlayer();
+            currentPlayer = 0;
         } catch (std::invalid_argument e) {
             LOG_ERROR << mapName << " not found!";
             exit(1);
@@ -56,6 +57,14 @@ public:
     }
 
     void gameLoop();
+
+    bool isWaiting() { return gameStatus == Status::WAITING; }
+
+    bool isPending() { return gameStatus == Status::PENDING; }
+
+    bool isStart() { return gameStatus == Status::START; }
+
+    bool isOver() { return gameStatus == Status::OVER; }
 
 private:
     Room() {};
@@ -87,6 +96,8 @@ private:
     FUCK(onGotIt);
 
     FUCK(onJoinRoom);
+
+    void onRoomInfoUpdate();
 
     FUCK(onUserChangeRole);
 

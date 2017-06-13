@@ -20,10 +20,11 @@ void Room::init() {
 
 void Room::onUserJoin(const WS &ws) {
 
-    if (currentPlayer >= maxPlayer) {
+    if (currentPlayer >= maxPlayer || !isWaiting()) {
         ws.user->close();
+        return;
     }
-
+    LOG_INFO << "new user join";
     auto user = new User();
     ws.user->setUserData(user);
     userList.insert({user->uid, user});
@@ -40,14 +41,18 @@ void Room::onGotIt(const WS &ws) {
     auto data = static_cast<const GotIt *>(ws.data->data());
     auto name = data->name()->str();
     name.substr(0, 16);
+    LOG_INFO << "Got user " << getUser(ws.user)->uid << " name:" << name;
     getUser(ws.user)->setName(name);
 }
 
 void Room::onJoinRoom(const WS &ws) {
     if (userList.size() == 0) return;
+    LOG_INFO << "user " << getUser(ws.user)->uid << " join room";
+    onRoomInfoUpdate();
+}
 
+void Room::onRoomInfoUpdate() {
     flatbuffers::FlatBufferBuilder builder;
-
     std::vector<flatbuffers::Offset<UserData>> usersVector;
 
     for (auto it = userList.cbegin(); it != userList.cend();) {
@@ -59,8 +64,8 @@ void Room::onJoinRoom(const WS &ws) {
         ++it;
     }
     auto users = builder.CreateVector(usersVector);
-    auto orc = CreateSomeoneJoinRoom(builder, users);
-    auto msg = CreateMsg(builder, MsgType_SomeoneJoinRoom, orc.Union());
+    auto orc = CreateRoomInfoUpdate(builder, users);
+    auto msg = CreateMsg(builder, MsgType_RoomInfoUpdate, orc.Union());
     builder.Finish(msg);
 
     server->emit(builder);
@@ -71,7 +76,7 @@ void Room::onUserChangeRole(const WS &ws) {
     auto role = data->role();
     getUser(ws.user)->setRole(role);
 
-    server->emit(ws.recv, ws.length);
+    onRoomInfoUpdate();
 }
 
 void Room::onUserChangeStats(const WS &ws) {
@@ -79,18 +84,31 @@ void Room::onUserChangeStats(const WS &ws) {
     auto stats = data->stat();
     getUser(ws.user)->setStats(stats);
 
-    if (stats == User::Stats::Done) {
-        //TODO
-    } else {
-        server->emit(ws.recv, ws.length);
-    }
+    onRoomInfoUpdate();
+
+//    if (stats == User::Stats::Done) {
+//        //TODO
+//    } else {
+//        server->emit(ws.recv, ws.length);
+//    }
 }
 
 void Room::onUserLeave(const WS &ws) {
+    auto user = getUser(ws.user);
+    auto uid = user->uid;
+    userList.erase(uid);
+    ws.user->setUserData(nullptr);
+    if (!isWaiting()) {
+        playerList.erase(uid);
+        // TODO
+    } else {
+        onRoomInfoUpdate();
+        currentPlayer++;
+    }
 //    auto user =
 //    auto player = getPlayerByUser(ws.user);
 //    this->playerList.erase(player->getObjectID());
-//    currentPlayer++;
+    delete user;
 }
 
 void Room::onPlayerPosChange(const WS &ws) {
@@ -360,7 +378,7 @@ void Room::initGame() {
 
         this->playerList.insert({uid, player});
         auto id = builder.CreateString(uid);
-        auto playerData = CreatePlayerData(builder, id, pos.x, pos.y);
+        auto playerData = CreatePlayerData(builder, id, pos.x, pos.y, user->getRole());
 
         playersVector.push_back(playerData);
     }

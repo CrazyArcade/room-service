@@ -1,6 +1,6 @@
 #include "user.h"
 
-User::User() : uid(ObjectID::generateID()), stats(Stats::UnReady) {
+User::User() : uid(ObjectID::generateID()), stats(Stats::UnReady), role(P1) {
 }
 
 void User::setStats(int stats) {
