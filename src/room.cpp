@@ -84,7 +84,10 @@ void Room::onUserChangeStats(const WS &ws) {
     auto stats = data->stat();
     getUser(ws.user)->setStats(stats);
 
-    onRoomInfoUpdate();
+    if (gameStatus == Status::WAITING) {
+        onRoomInfoUpdate();
+    }
+
 
 //    if (stats == User::Stats::Done) {
 //        //TODO
@@ -95,6 +98,7 @@ void Room::onUserChangeStats(const WS &ws) {
 
 void Room::onUserLeave(const WS &ws) {
     auto user = getUser(ws.user);
+    if (!user) { return; }
     auto uid = user->uid;
     userList.erase(uid);
     ws.user->setUserData(nullptr);

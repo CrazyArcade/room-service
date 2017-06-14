@@ -7,8 +7,8 @@
 class User {
 public:
     enum Stats {
+        UnReady = 0,
         Ready,
-        UnReady,
         Done
     };
 
@@ -21,6 +21,8 @@ public:
     const std::string uid;
 
     User();
+
+    ~User();
 
     void setStats(int stats);
 

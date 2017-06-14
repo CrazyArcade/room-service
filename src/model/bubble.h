@@ -8,6 +8,7 @@ public:
     Bubble(const objectID &playerID, const APP::Vec2 &pos, uint8_t damage) :
             playerID(playerID), damage(damage), boomAt(time(nullptr) + 3) { this->pos = pos; };
 
+    ~Bubble() { LOG_DEBUG << "destroy"; };
     static std::shared_ptr<Bubble> Factory(const objectID &playerID, const APP::Vec2 &pos, int damage);
 
     uint8_t getDamage();

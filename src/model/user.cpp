@@ -31,3 +31,7 @@ void User::setRole(int role) {
 int User::getRole() {
     return role;
 }
+
+User::~User() {
+    LOG_DEBUG << "user destroy";
+}
