@@ -1,7 +1,7 @@
 FROM alpine:3.6 as BUILD
+LABEL maintainer "i@giuem.com"
 
 WORKDIR /code
-
 RUN apk add --no-cache \
     g++ cmake make util-linux-dev openssl-dev zlib-dev git
 
@@ -14,6 +14,7 @@ RUN git submodule sync --recursive && git submodule update --init --recursive &&
 
 
 FROM alpine:3.6
+LABEL maintainer "i@giuem.com"
 
 RUN apk add --no-cache \
     libstdc++ libgcc util-linux-dev openssl-dev zlib-dev make
