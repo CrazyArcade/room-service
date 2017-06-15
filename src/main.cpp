@@ -10,6 +10,7 @@ int main() {
 
     room->setMap("town_10");
     room->setServer(server);
+    room->initRoom();
 
     h.onConnection([&](uWS::WebSocket<uWS::SERVER> *ws, uWS::HttpRequest req) {
         server->onConnection(ws);

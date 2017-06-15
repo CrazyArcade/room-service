@@ -21,6 +21,8 @@ public:
 
     Map(const std::string &name);
 
+    void init();
+
     bool isInMap(const APP::Vec2 &coord);
 
     int at(const APP::Vec2 &coord);
@@ -46,8 +48,12 @@ public:
 
     bool isCanAccess(const APP::Vec2 &pos);
 
+    bool isInSameTile(const APP::Vec2 &pos1, const APP::Vec2 &pos2);
+
 
 private:
+    std::string mapPath;
+
     APP::Size mapSize;
     APP::Size tileSize;
 

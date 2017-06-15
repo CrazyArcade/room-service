@@ -5,35 +5,7 @@
 using namespace nlohmann;
 
 Map::Map(const std::string &name) {
-    std::string path = "maps/" + name + ".json";
-    std::ifstream source(path);
-    if (!source.good()) {
-        throw std::invalid_argument("map file miss");
-    }
-    json j;
-    j << source;
-    maxPlayer = j["max_player"];
-    json::array_t meta = j["meta"];
-    json::array_t born = j["born"];
-
-    mapSize.height = static_cast<unsigned int>(meta.size());
-    mapSize.width = static_cast<unsigned int>(meta[0].size());
-
-    tileSize.height = tileSize.width = 40;
-
-    mapData.resize(mapSize.height * mapSize.width);
-
-    int offset = 0;
-    for (int i = 0; i < mapSize.height; ++i) {
-        json::array_t row = meta[i];
-        for (int j = 0; j < mapSize.width; ++j) {
-            mapData[offset++] = row[j];
-        }
-    }
-
-    for (const json::array_t &i : born) {
-        bornPoint.push_back(std::make_pair(i[0], i[1]));
-    }
+    mapPath = "maps/" + name + ".json";
 }
 
 bool Map::isInMap(const APP::Vec2 &coord) {
@@ -103,6 +75,44 @@ void Map::addProp(const APP::Vec2 &pos, int type) {
 bool Map::isCanAccess(const APP::Vec2 &pos) {
     auto tile = at(positionToTileCoord(pos));
     return (tile == TILE_EMPTY || tile >= 100);
+}
+
+bool Map::isInSameTile(const APP::Vec2 &pos1, const APP::Vec2 &pos2) {
+    return positionToTileCoord(pos1) == positionToTileCoord(pos2);
+}
+
+void Map::init() {
+    mapData.clear();
+    bornPoint.clear();
+
+    std::ifstream source(mapPath);
+    if (!source.good()) {
+        throw std::invalid_argument("map file miss");
+    }
+    json j;
+    j << source;
+    maxPlayer = j["max_player"];
+    json::array_t meta = j["meta"];
+    json::array_t born = j["born"];
+
+    mapSize.height = static_cast<unsigned int>(meta.size());
+    mapSize.width = static_cast<unsigned int>(meta[0].size());
+
+    tileSize.height = tileSize.width = 40;
+
+    mapData.resize(mapSize.height * mapSize.width);
+
+    int offset = 0;
+    for (int i = 0; i < mapSize.height; ++i) {
+        json::array_t row = meta[i];
+        for (int j = 0; j < mapSize.width; ++j) {
+            mapData[offset++] = row[j];
+        }
+    }
+
+    for (const json::array_t &i : born) {
+        bornPoint.push_back(std::make_pair(i[0], i[1]));
+    }
 }
 
 

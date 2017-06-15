@@ -4,7 +4,7 @@ using namespace API;
 
 #define ON(code, funcName) server->on(code, CALLBACK(Room::funcName, this))
 
-void Room::init() {
+void Room::initServer() {
     ON(-2, onUserJoin);
     ON(-1, onUserLeave);
 
@@ -82,12 +82,13 @@ void Room::onUserChangeRole(const WS &ws) {
 void Room::onUserChangeStats(const WS &ws) {
     auto data = static_cast<const UserChangeStats *>(ws.data->data());
     auto stats = data->stat();
-    getUser(ws.user)->setStats(stats);
+    auto user = getUser(ws.user);
+    user->setStats(stats);
 
     if (gameStatus == Status::WAITING) {
         onRoomInfoUpdate();
     }
-
+    LOG_INFO << "user" + user->uid + " change stats: " << stats;
 
 //    if (stats == User::Stats::Done) {
 //        //TODO
@@ -109,9 +110,7 @@ void Room::onUserLeave(const WS &ws) {
         onRoomInfoUpdate();
         currentPlayer++;
     }
-//    auto user =
-//    auto player = getPlayerByUser(ws.user);
-//    this->playerList.erase(player->getObjectID());
+
     delete user;
 }
 
@@ -127,8 +126,8 @@ void Room::onPlayerPosChange(const WS &ws) {
 
     auto type = map->at(nextCoord);
 
-    if (!map->isCanAccess(nextPos) || player->getStatus() != Player::Status::FREE) {
-        //LOG_DEBUG << nextCoord.x << ", " << nextCoord.y;
+    if (!map->isInSameTile(player->getPosition(), nextPos) &&
+        (!map->isCanAccess(nextPos) || player->getStatus() != Player::Status::FREE)) {
         // TODO emit user
         return;
     }
@@ -258,15 +257,18 @@ void Room::onPlayerStatusChange(std::shared_ptr<Player> player, Player::Status s
 }
 
 void Room::gameLoop() {
+    if (userList.size() <= 1) return;
+
     if (gameStatus == Status::WAITING || gameStatus == Status::PENDING) {
         auto total = userList.size();
-        auto readySum = 0;
-        for (auto it = userList.cbegin(); it != userList.cend();) {
-            if (it->second->getStats() == ::User::Stats::Ready) ++readySum;
-            ++it;
+        auto reachStats = 0;
+        auto checkStatus = (gameStatus == Status::WAITING ? User::Stats::Ready : User::Stats::Done);
+        for (auto it = userList.cbegin(); it != userList.cend(); ++it) {
+            if (it->second->getStats() == checkStatus) ++reachStats;
         }
-        if (readySum == total) {
+        if (reachStats == total) {
             auto nextStatus = static_cast<Status>((int) gameStatus + 1);
+
             onGameStatusChange(nextStatus);
         }
     } else if (gameStatus == Status::START) {
@@ -307,9 +309,9 @@ void Room::gameLoop() {
 }
 
 std::shared_ptr<Player> Room::getPlayerByUser(Server::wsuser user) {
-    auto id = static_cast<std::string *>(user->getUserData());
-    if (id) {
-        auto player = playerList.find(*id);
+    auto _user = getUser(user);
+    if (_user != nullptr) {
+        auto player = playerList.find(_user->uid);
         if (player != playerList.cend()) return player->second;
     }
     return nullptr;
@@ -359,12 +361,17 @@ inline User *Room::getUser(Server::wsuser user) {
 }
 
 void Room::onGameStatusChange(Status status) {
+    this->gameStatus = status;
+    LOG_INFO << "game status change: " << (int) gameStatus;
     flatbuffers::FlatBufferBuilder builder;
     auto orc = CreateGameStatusChange(builder, static_cast<GameStatus>(status));
     auto msg = CreateMsg(builder, MsgType_GameStatusChange, orc.Union());
     builder.Finish(msg);
-
     server->emit(builder);
+
+    if (status == Status::START) {
+        initGame();
+    }
 }
 
 void Room::initGame() {
@@ -393,4 +400,19 @@ void Room::initGame() {
     builder.Finish(msg);
 
     server->emit(builder);
+}
+
+void Room::initRoom() {
+    // set all user to unready
+    for (auto &user : userList) {
+        user.second->setStats(0);
+    }
+
+    // reset game entity
+    playerList.clear();
+    propList.clear();
+    bubbleList.clear();
+    map->init();
+
+    gameStatus = Status::WAITING;
 }

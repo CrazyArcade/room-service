@@ -17,7 +17,6 @@ class Room {
 public:
     static Room *getInstance() {
         static Room INSTANCE;
-        INSTANCE.gameStatus = Status::WAITING;
         return &INSTANCE;
     }
 
@@ -53,8 +52,10 @@ public:
 
     void setServer(Server *server) {
         this->server = server;
-        this->init();
+        this->initServer();
     }
+
+    void initRoom();
 
     void gameLoop();
 
@@ -69,7 +70,7 @@ public:
 private:
     Room() {};
 
-    void init();
+    void initServer();
 
     Status gameStatus;
 
