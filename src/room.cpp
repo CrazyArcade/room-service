@@ -28,6 +28,7 @@ void Room::onUserJoin(const WS &ws) {
     auto user = new User();
     ws.user->setUserData(user);
     userList.insert({user->uid, user});
+    ++currentPlayer;
 
     flatbuffers::FlatBufferBuilder builder;
     auto uid = builder.CreateString(user->uid);
@@ -99,16 +100,17 @@ void Room::onUserChangeStats(const WS &ws) {
 
 void Room::onUserLeave(const WS &ws) {
     auto user = getUser(ws.user);
+    if (currentPlayer > 0) --currentPlayer;
     if (!user) { return; }
     auto uid = user->uid;
     userList.erase(uid);
     ws.user->setUserData(nullptr);
-    if (!isWaiting()) {
-        playerList.erase(uid);
-        // TODO
-    } else {
+    if (isWaiting()) {
         onRoomInfoUpdate();
-        currentPlayer++;
+    }
+    // some one leave in game
+    if ((isStart() || isPending()) && currentPlayer == 1) {
+        onGameStatusChange(Status::OVER);
     }
 
     delete user;
@@ -371,6 +373,8 @@ void Room::onGameStatusChange(Status status) {
 
     if (status == Status::START) {
         initGame();
+    } else if (status == Status::OVER) {
+        initRoom();
     }
 }
 
@@ -413,6 +417,8 @@ void Room::initRoom() {
     propList.clear();
     bubbleList.clear();
     map->init();
+
+    maxPlayer = map->getMaxPlayer();
 
     gameStatus = Status::WAITING;
 }

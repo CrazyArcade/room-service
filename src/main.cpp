@@ -4,6 +4,11 @@
 #include "room.h"
 
 int main() {
+    int port = atoi(std::getenv("PORT"));
+    if (0 > port && port > 65535) {
+        LOG_ERROR << "port invalid!";
+        exit(-1);
+    }
     uWS::Hub h;
     auto server = new Server(&h);
     auto room = Room::getInstance();
@@ -30,14 +35,14 @@ int main() {
 
     constexpr int delay = 100; // 100ms
     Timer timer(h.getLoop());
-    timer.start([&](Timer *handle) {
+    timer.start([](Timer *handle) {
         Room::getInstance()->gameLoop();
     }, 0, delay);
 
-    if (h.listen(4000)) {
-        LOG_INFO << "start";
+    if (h.listen(port)) {
+        LOG_INFO << "start at " << port;
     } else {
-        LOG_INFO << "Can't listen at port 4000";
+        LOG_INFO << "Can't listen at port " << port;
     }
 
     h.run();

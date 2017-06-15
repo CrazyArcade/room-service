@@ -42,7 +42,6 @@ public:
     void setMap(const std::string &mapName) {
         try {
             map = std::make_shared<Map>(mapName);
-            maxPlayer = map->getMaxPlayer();
             currentPlayer = 0;
         } catch (std::invalid_argument e) {
             LOG_ERROR << mapName << " not found!";
