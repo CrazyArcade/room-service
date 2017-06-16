@@ -1,24 +1,9 @@
-# Server
+# Room Server
 
-## Requirement
-
-``` shell
-apt install -y uuid-dev libssl-dev zlib1g-dev git
-```
+[![Docker Automated buil](https://img.shields.io/docker/automated/giuem/crazyarcade-room-server.svg)]()
+[![Docker Build Statu](https://img.shields.io/docker/build/giuem/crazyarcade-room-server.svg)](https://hub.docker.com/r/giuem/crazyarcade-room-server/)
+[![license](https://img.shields.io/github/license/CrazyArcade/CrazyArcade-server.svg)]()
 
 ## Build
 
-```shell
-git submodule sync --recursive && git submodule update --init --recursive
-cd include/uWebSockets && make && make install
-cd ../..
-
-mkdir build && cd build
-cmake ..
-make
-```
-
-## Library
-
-* [crow](https://github.com/ipkn/crow)
-* [nlohmann/json](https://github.com/nlohmann/json)
+see `Dockerfile`
