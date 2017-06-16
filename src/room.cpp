@@ -60,7 +60,8 @@ void Room::onRoomInfoUpdate() {
         auto user = *it;
         auto uid = builder.CreateString(user->uid);
         auto name = builder.CreateString(user->getName());
-        auto userData = CreateUserData(builder, uid, name, user->getRole());
+        bool isReady = user->getStats() == User::Stats::Ready;
+        auto userData = CreateUserData(builder, uid, name, user->getRole(), isReady);
         usersVector.push_back(userData);
         ++it;
     }

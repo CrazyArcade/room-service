@@ -225,7 +225,8 @@ namespace API {
         enum {
             VT_UID = 4,
             VT_NAME = 6,
-            VT_ROLE = 8
+            VT_ROLE = 8,
+            VT_ISREADY = 10
         };
 
         const flatbuffers::String *uid() const { return GetPointer<const flatbuffers::String *>(VT_UID); }
@@ -234,6 +235,8 @@ namespace API {
 
         int32_t role() const { return GetField<int32_t>(VT_ROLE, 0); }
 
+        bool isReady() const { return GetField<uint8_t>(VT_ISREADY, 0) != 0; }
+
         bool Verify(flatbuffers::Verifier &verifier) const {
             return VerifyTableStart(verifier) &&
                    VerifyField<flatbuffers::uoffset_t>(verifier, VT_UID) &&
@@ -241,6 +244,7 @@ namespace API {
                    VerifyField<flatbuffers::uoffset_t>(verifier, VT_NAME) &&
                    verifier.Verify(name()) &&
                    VerifyField<int32_t>(verifier, VT_ROLE) &&
+                   VerifyField<uint8_t>(verifier, VT_ISREADY) &&
                    verifier.EndTable();
         }
     };
@@ -255,12 +259,16 @@ namespace API {
 
         void add_role(int32_t role) { fbb_.AddElement<int32_t>(UserData::VT_ROLE, role, 0); }
 
+        void add_isReady(bool isReady) {
+            fbb_.AddElement<uint8_t>(UserData::VT_ISREADY, static_cast<uint8_t>(isReady), 0);
+        }
+
         UserDataBuilder(flatbuffers::FlatBufferBuilder &_fbb) : fbb_(_fbb) { start_ = fbb_.StartTable(); }
 
         UserDataBuilder &operator=(const UserDataBuilder &);
 
         flatbuffers::Offset<UserData> Finish() {
-            auto o = flatbuffers::Offset<UserData>(fbb_.EndTable(start_, 3));
+            auto o = flatbuffers::Offset<UserData>(fbb_.EndTable(start_, 4));
             return o;
         }
     };
@@ -268,19 +276,23 @@ namespace API {
     inline flatbuffers::Offset<UserData> CreateUserData(flatbuffers::FlatBufferBuilder &_fbb,
                                                         flatbuffers::Offset<flatbuffers::String> uid = 0,
                                                         flatbuffers::Offset<flatbuffers::String> name = 0,
-                                                        int32_t role = 0) {
+                                                        int32_t role = 0,
+                                                        bool isReady = false) {
         UserDataBuilder builder_(_fbb);
         builder_.add_role(role);
         builder_.add_name(name);
         builder_.add_uid(uid);
+        builder_.add_isReady(isReady);
         return builder_.Finish();
     }
 
     inline flatbuffers::Offset<UserData> CreateUserDataDirect(flatbuffers::FlatBufferBuilder &_fbb,
                                                               const char *uid = nullptr,
                                                               const char *name = nullptr,
-                                                              int32_t role = 0) {
-        return CreateUserData(_fbb, uid ? _fbb.CreateString(uid) : 0, name ? _fbb.CreateString(name) : 0, role);
+                                                              int32_t role = 0,
+                                                              bool isReady = false) {
+        return CreateUserData(_fbb, uid ? _fbb.CreateString(uid) : 0, name ? _fbb.CreateString(name) : 0, role,
+                              isReady);
     }
 
     struct Welcome FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {

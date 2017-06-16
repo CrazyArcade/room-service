@@ -49,6 +49,7 @@ table UserData {
     uid:string;
     name:string;
     role:int;
+    isReady:bool;
 }
 
 // user connect, server accept it and send back uid
