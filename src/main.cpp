@@ -4,11 +4,12 @@
 #include "room.h"
 
 int main() {
-    int port = atoi(std::getenv("PORT"));
-    if (0 > port && port > 65535) {
-        LOG_ERROR << "port invalid!";
-        exit(-1);
+    int port = 4000;
+    if (std::getenv("PORT")) {
+        auto p = atoi(std::getenv("PORT"));
+        if (0 < p && p < 65536) port = p;
     }
+
     uWS::Hub h;
     auto server = new Server(&h);
     auto room = Room::getInstance();

@@ -196,6 +196,9 @@ void Room::onBubbleBoom(std::shared_ptr<Bubble> bubble) {
     auto checkPlayer = [this](const APP::Vec2 &coord) {
         for (auto &item : playerList) {
             auto player = item.second;
+            // player can't freeze twice
+            if (player->getStatus() != Player::Status::FREE) continue;
+
             auto playerCoord = map->positionToTileCoord(player->getPosition());
             if (playerCoord == coord) {
                 onPlayerStatusChange(player, Player::Status::FREEZE);
