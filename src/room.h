@@ -79,7 +79,7 @@ private:
     Server *server;
 
     /* game user */
-    std::unordered_map<objectID, User *> userList;
+    std::vector<User *> userList;
 
     /* game entity */
     std::shared_ptr<Map> map;

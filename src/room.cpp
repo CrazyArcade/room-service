@@ -27,7 +27,7 @@ void Room::onUserJoin(const WS &ws) {
     LOG_INFO << "new user join";
     auto user = new User();
     ws.user->setUserData(user);
-    userList.insert({user->uid, user});
+    userList.push_back(user);
     ++currentPlayer;
 
     flatbuffers::FlatBufferBuilder builder;
@@ -57,7 +57,7 @@ void Room::onRoomInfoUpdate() {
     std::vector<flatbuffers::Offset<UserData>> usersVector;
 
     for (auto it = userList.cbegin(); it != userList.cend();) {
-        auto user = it->second;
+        auto user = *it;
         auto uid = builder.CreateString(user->uid);
         auto name = builder.CreateString(user->getName());
         auto userData = CreateUserData(builder, uid, name, user->getRole());
@@ -102,8 +102,8 @@ void Room::onUserLeave(const WS &ws) {
     auto user = getUser(ws.user);
     if (currentPlayer > 0) --currentPlayer;
     if (!user) { return; }
-    auto uid = user->uid;
-    userList.erase(uid);
+    //auto uid = user->uid;
+    userList.erase(std::remove(userList.begin(), userList.end(), user), userList.cend());
     ws.user->setUserData(nullptr);
     if (isWaiting()) {
         onRoomInfoUpdate();
@@ -269,7 +269,7 @@ void Room::gameLoop() {
         auto reachStats = 0;
         auto checkStatus = (gameStatus == Status::WAITING ? User::Stats::Ready : User::Stats::Done);
         for (auto it = userList.cbegin(); it != userList.cend(); ++it) {
-            if (it->second->getStats() == checkStatus) ++reachStats;
+            if ((*it)->getStats() == checkStatus) ++reachStats;
         }
         if (reachStats == total) {
             auto nextStatus = static_cast<Status>((int) gameStatus + 1);
@@ -386,8 +386,8 @@ void Room::initGame() {
     std::vector<flatbuffers::Offset<PlayerData>> playersVector;
 
     for (auto it = userList.cbegin(); it != userList.cend(); ++it) {
-        auto uid = it->first;
-        auto user = it->second;
+        auto user = *it;
+        auto uid = user->uid;
 
         auto player = Player::Factory();
         player->setObjectID(uid);
@@ -412,7 +412,7 @@ void Room::initGame() {
 void Room::initRoom() {
     // set all user to unready
     for (auto &user : userList) {
-        user.second->setStats(0);
+        user->setStats(0);
     }
 
     // reset game entity
