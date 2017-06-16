@@ -20,7 +20,7 @@ RUN apk add --no-cache \
     libstdc++ libgcc util-linux-dev openssl-dev zlib-dev
 WORKDIR /app/build
 COPY --from=BUILD /code /app
-RUN cd /app/include/uWebSockets && make install
+RUN cd /app/include/uWebSockets && if [ -d "/usr/lib64" ]; then cp libuWS.so /usr/lib64/; else cp libuWS.so /usr/lib/; fi
 
 ENV PORT 4000
 
