@@ -106,6 +106,8 @@ void Room::onUserLeave(const WS &ws) {
     //auto uid = user->uid;
     userList.erase(std::remove(userList.begin(), userList.end(), user), userList.cend());
     ws.user->setUserData(nullptr);
+    delete user;
+
     if (isWaiting()) {
         onRoomInfoUpdate();
     }
@@ -113,8 +115,6 @@ void Room::onUserLeave(const WS &ws) {
     if ((isStart() || isPending()) && currentPlayer == 1) {
         onGameStatusChange(Status::OVER);
     }
-
-    delete user;
 }
 
 void Room::onPlayerPosChange(const WS &ws) {
