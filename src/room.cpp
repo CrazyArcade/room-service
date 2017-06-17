@@ -389,16 +389,19 @@ void Room::initGame() {
     for (auto it = userList.cbegin(); it != userList.cend(); ++it) {
         auto user = *it;
         auto uid = user->uid;
+        auto role = user->getRole();
 
-        auto player = Player::Factory();
+        auto player = Player::Factory(role);
         player->setObjectID(uid);
         auto pos = map->getBornPoint();
         player->setPosition(pos);
 
         this->playerList.insert({uid, player});
-        auto id = builder.CreateString(uid);
-        auto playerData = CreatePlayerData(builder, id, pos.x, pos.y, user->getRole());
 
+        auto playerAttr = player->getAttr();
+        auto id = builder.CreateString(uid);
+        auto playerData = CreatePlayerData(builder, id, pos.x, pos.y, role, playerAttr.speed, playerAttr.damage,
+                                           playerAttr.maxBubble);
         playersVector.push_back(playerData);
     }
 

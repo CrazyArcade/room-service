@@ -1,10 +1,25 @@
+#include <fstream>
 #include "player.h"
 #include "prop.h"
+#include "nlohmann/json.hpp"
 
-Player::Player(std::uint8_t speed, std::uint8_t damage, std::uint8_t bubble) {
-    attr.speed = speed;
-    attr.damage = damage;
-    attr.maxBubble = attr.currentBubble = bubble;
+Player::Player(int role) {
+    std::ifstream data("players/" + std::to_string(role) + ".json");
+    if (!data.good()) {
+        throw std::invalid_argument("player data not found");
+    }
+
+    nlohmann::json j;
+    j << data;
+
+    attr.speed = j["speed"];
+    attr.damage = j["damage"];
+    attr.maxBubble = attr.currentBubble = j["bubble"];
+
+    maxAttr.speed = j["max_speed"];
+    maxAttr.damage = j["max_damage"];
+    maxAttr.maxBubble = j["max_bubble"];
+
     status = Status::FREE;
 }
 
@@ -52,8 +67,8 @@ std::string Player::getName() const {
     return this->_name;
 }
 
-std::shared_ptr<Player> Player::Factory(uint8_t speed, uint8_t damage, uint8_t bubble) {
-    return std::make_shared<Player>(speed, damage, bubble);
+std::shared_ptr<Player> Player::Factory(int role) {
+    return std::make_shared<Player>(role);
 }
 
 
@@ -80,18 +95,18 @@ uint8_t Player::getDamage() {
 void Player::setAttr(int type) {
     switch (static_cast<Prop::Type>(type)) {
         case Prop::Type::BUBBLE :
-            if (attr.maxBubble < 7) {
+            if (attr.maxBubble < maxAttr.maxBubble) {
                 attr.currentBubble++;
                 attr.maxBubble++;
             }
             return;
         case Prop::Type::SPEED :
-            if (attr.speed < 7) {
+            if (attr.speed < maxAttr.speed) {
                 attr.speed++;
             }
             return;
         case Prop::Type::DAMAGE:
-            if (attr.damage < 7) {
+            if (attr.damage < maxAttr.damage) {
                 attr.damage++;
             }
             return;

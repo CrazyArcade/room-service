@@ -23,7 +23,7 @@ std::string User::getName() {
 
 void User::setRole(int role) {
     // NOTICE: change role num
-    if (role < 2) {
+    if (role < 3) {
         this->role = static_cast<Role>(role);
     }
 }

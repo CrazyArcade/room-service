@@ -82,6 +82,9 @@ table PlayerData {
     x:int;
     y:int;
     role:int;
+    speed:ubyte;
+    damage:ubyte;
+    bubble:ubyte;
 }
 
 table GameInit {

@@ -1,0 +1,8 @@
+{
+  "speed": 2,
+  "max_speed": 6,
+  "damage": 2,
+  "max_damage": 7,
+  "bubble": 1,
+  "max_bubble": 7
+}

@@ -17,10 +17,10 @@ struct Attr {
 
 class Player : public Entity {
 public:
-    Player(std::uint8_t speed, std::uint8_t damage, std::uint8_t maxBubble);
+    Player(int role);
     ~Player() = default;
 
-    static std::shared_ptr<Player> Factory(std::uint8_t speed = 2, std::uint8_t damage = 1, std::uint8_t bubble = 1);
+    static std::shared_ptr<Player> Factory(int role);
 
     enum class Direction : std::uint8_t {
         LEFT,
@@ -71,7 +71,9 @@ private:
     std::string _name;
     std::time_t directions[4] = {0};
     Status status;
+
     Attr attr;
+    Attr maxAttr;
 
     time_t dieAt;
 

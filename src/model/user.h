@@ -14,8 +14,8 @@ public:
 
     enum Role {
         P1,
-        P2
-        // ...
+        P2,
+        p3
     };
 
     const std::string uid;
