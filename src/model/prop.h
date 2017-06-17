@@ -24,7 +24,7 @@ private:
 
     const std::map<Type, int> weights = {
             {Type::EMPTY,  6},
-            {Type::SPEED,  1},
+            {Type::SPEED,  2},
             {Type::BUBBLE, 2},
             {Type::DAMAGE, 2},
     };

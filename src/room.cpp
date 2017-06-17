@@ -124,7 +124,7 @@ void Room::onPlayerPosChange(const WS &ws) {
 
     auto data = static_cast<const PlayerPosChange *>(ws.data->data());
     //auto prevPos = player->getPosition();
-    auto nextPos = APP::Vec2(data->x(), data->y());
+    auto nextPos = APP::Vec2(data->x() / 10, data->y() / 10);
     auto nextCoord = map->positionToTileCoord(nextPos);
 
     auto type = map->at(nextCoord);
