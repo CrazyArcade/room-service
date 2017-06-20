@@ -14,6 +14,7 @@ void Room::initServer() {
     ON(MsgType_UserChangeRole, onUserChangeRole);
     ON(MsgType_UserChangeStats, onUserChangeStats);
     ON(MsgType_RoomInfoUpdate, onRoomInfoUpdate);
+    ON(MsgType_Chat, onChat);
 
     ON(MsgType_PlayerPosChange, onPlayerPosChange);
     ON(MsgType_PlayerSetBubble, onPlayerSetBubble);
@@ -442,7 +443,7 @@ void Room::initRoom() {
 
 void Room::onChat(const WS &ws) {
     auto user = getUser(ws.user);
-    auto data = static_cast<Chat *>(ws.data);
+    auto data = static_cast<const Chat *>(ws.data->data());
     auto text = data->text()->str();
     text.substr(0, 64);
     text = "[" + user->getName() + "]: " + text;
