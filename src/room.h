@@ -97,6 +97,8 @@ private:
 
     FUCK(onJoinRoom);
 
+    FUCK(onChat);
+
     void onRoomInfoUpdate(const WS &ws = WS());
 
     FUCK(onUserChangeRole);

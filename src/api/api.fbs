@@ -10,6 +10,7 @@ union MsgType {
     RoomInfoUpdate,
     UserChangeRole,
     UserChangeStats,
+    Chat,
 
 // game packet
     GameInit,
@@ -149,6 +150,10 @@ table PlayerStatusChange {
 
 table GameStatusChange {
     status:GameStatus;
+}
+
+table Chat {
+    text:string;
 }
 
 table Msg {

@@ -439,3 +439,19 @@ void Room::initRoom() {
 
     gameStatus = Status::WAITING;
 }
+
+void Room::onChat(const WS &ws) {
+    auto user = getUser(ws.user);
+    auto data = static_cast<Chat *>(ws.data);
+    auto text = data->text()->str();
+    text.substr(0, 64);
+    text = "[" + user->getName() + "]: " + text;
+
+    flatbuffers::FlatBufferBuilder builder;
+    auto str = builder.CreateString(text);
+    auto orc = CreateChat(builder, str);
+    auto msg = CreateMsg(builder, MsgType_Chat, orc.Union());
+    builder.Finish(msg);
+
+    server->emit(builder);
+}
