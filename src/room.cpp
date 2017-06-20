@@ -13,6 +13,7 @@ void Room::initServer() {
     ON(MsgType_JoinRoom, onJoinRoom);
     ON(MsgType_UserChangeRole, onUserChangeRole);
     ON(MsgType_UserChangeStats, onUserChangeStats);
+    ON(MsgType_RoomInfoUpdate, onRoomInfoUpdate);
 
     ON(MsgType_PlayerPosChange, onPlayerPosChange);
     ON(MsgType_PlayerSetBubble, onPlayerSetBubble);
@@ -52,7 +53,7 @@ void Room::onJoinRoom(const WS &ws) {
     onRoomInfoUpdate();
 }
 
-void Room::onRoomInfoUpdate() {
+void Room::onRoomInfoUpdate(const WS &ws) {
     flatbuffers::FlatBufferBuilder builder;
     std::vector<flatbuffers::Offset<UserData>> usersVector;
 
@@ -138,6 +139,15 @@ void Room::onPlayerPosChange(const WS &ws) {
     if (type >= 100) {
         onPlayerAttrChange(player, type);
         map->removeTile(nextCoord);
+    }
+
+    for (auto it = playerList.begin(); it != playerList.end(); ++it) {
+        if (it->first == player->getObjectID()) continue;
+        if (it->second->getStatus() == Player::Status::FREEZE) {
+            if (map->isInSameTile(it->second->getPosition(), nextPos)) {
+                onPlayerStatusChange(it->second, Player::Status::DIE);
+            }
+        }
     }
 
     //LOG_DEBUG << "player(" << id << ") move to " << "(" << pos.x << ", " << pos.y << ")";
