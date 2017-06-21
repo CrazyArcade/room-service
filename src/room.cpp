@@ -122,16 +122,22 @@ void Room::onUserLeave(const WS &ws) {
 void Room::onPlayerPosChange(const WS &ws) {
     auto player = getPlayerByUser(ws.user);
     if (!player) return;
-    // TODO invalid check
 
     auto data = static_cast<const PlayerPosChange *>(ws.data->data());
-    //auto prevPos = player->getPosition();
     auto nextPos = APP::Vec2(data->x() / 10, data->y() / 10);
+    auto pos = player->getPosition();
+
+    // invalid check
+    // player real speed = speed * 0.3 + 0.8
+    // client send pos per 2 frames
+    // every time player move less than (speed * 0.3 + 0.8) * 2
+    if (hypot(nextPos.x - pos.x, nextPos.y - pos.y) > (player->getAttr().speed * 0.3f + 0.8) * 2.1f) return;
+
     auto nextCoord = map->positionToTileCoord(nextPos);
 
     auto type = map->at(nextCoord);
 
-    if (!map->isInSameTile(player->getPosition(), nextPos) &&
+    if (!map->isInSameTile(pos, nextPos) &&
         (!map->isCanAccess(nextPos) || player->getStatus() != Player::Status::FREE)) {
         // TODO emit user
         return;
@@ -321,7 +327,7 @@ void Room::gameLoop() {
             }
             ++it;
         }
-        if (totalPlayer == 1) onGameStatusChange(Status::OVER);
+        if (totalPlayer <= 1) onGameStatusChange(Status::OVER);
     }
 }
 
